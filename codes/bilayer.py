@@ -4,7 +4,7 @@
 Bilayer construction routines.
 """
 
-import os,re
+import os,re,shutil
 import numpy as np
 import random
 from copy import deepcopy
@@ -403,24 +403,39 @@ def bilayer_sorter(structure,ndx='system-groups',protein=False):
 	"""
 	Divide the system into groups.
 	"""
+	#---figure out if we are aamd or cgmd
 	sol_list = [state.sol,'ION',state.cation,state.anion]
+	#---! check for lipids and ions !
 	#---! fix the protein_ready reference here
 	if 'protein_ready' in state or protein:
-		gmx('make_ndx',structure=structure,ndx='%s-inspect'%structure,
-			log='make-ndx-%s-inspect'%structure,inpipe="q\n")
-		with open(state.here+'log-make-ndx-%s-inspect'%structure) as fp: lines = fp.readlines()
-		#---find the protein group because it may not be obvious in CGMD
-		make_ndx_sifter = '^\s*([0-9]+)\s*Protein'
-		protein_group = int(re.findall(make_ndx_sifter,
-			next(i for i in lines if re.match(make_ndx_sifter,i)))[0])
-		group_selector = "\n".join([
-			"keep %s"%protein_group,
-			"name 0 PROTEIN",
-			" || ".join(['r '+r for r in state.lipids]),
-			"name 1 LIPIDS",
-			" || ".join(['r '+r for r in sol_list]),
-			"name 2 SOLVENT",
-			"0 | 1 | 2","name 3 SYSTEM","0 | 1","name 4 LIPIDS_PROTEIN","q"])+"\n"
+		#---in the atomistic method, the make_ndx output will figure out which items are proteins
+		if atomistic_or_coarse()=='aamd':
+			gmx('make_ndx',structure=structure,ndx='%s-inspect'%structure,
+				log='make-ndx-%s-inspect'%structure,inpipe="q\n")
+			with open(state.here+'log-make-ndx-%s-inspect'%structure) as fp: lines = fp.readlines()
+			#---find the protein group because it may not be obvious in CGMD
+			make_ndx_sifter = '^\s*([0-9]+)\s*Protein'
+			protein_group = int(re.findall(make_ndx_sifter,
+				next(i for i in lines if re.match(make_ndx_sifter,i)))[0])
+			group_selector = "\n".join([
+				"keep %s"%protein_group,
+				"name 0 PROTEIN",
+				" || ".join(['r '+r for r in state.lipids]),
+				"name 1 LIPIDS",
+				" || ".join(['r '+r for r in sol_list]),
+				"name 2 SOLVENT",
+				"0 | 1 | 2","name 3 SYSTEM","0 | 1","name 4 LIPIDS_PROTEIN","q"])+"\n"
+		else:
+			#---! hard-coded for MARTINI
+			land = Landscape('martini')
+			protein_selection = land.protein_selection()
+			group_selector = "\n".join([
+				"keep 0",protein_selection,"keep 1","name 0 PROTEIN",
+				" || ".join(['r '+r for r in state.lipids]),
+				"name 1 LIPIDS",
+				" || ".join(['r '+r for r in sol_list]),
+				"name 2 SOLVENT",
+				"0 | 1 | 2","name 3 SYSTEM","0 | 1","name 4 LIPIDS_PROTEIN","q"])+"\n"
 	else:
 		group_selector = "\n".join([
 			"keep 0",
@@ -459,3 +474,27 @@ def bilayer_flatten_for_restraints(structure,gro):
 			mean_z = struct.points[subjects].mean(axis=0)[2]
 			struct.points[subjects,2] = mean_z
 	struct.write(state.here+gro+'.gro')
+
+def release_restraints():
+	"""
+	Custom method for removing restraints.
+	"""
+	#---replace restrained lipid names with the correct topology
+	lipid_regex = '^([A-Z]{4})R$'
+	renames = []
+	for key in state.lipids:
+		if re.match(lipid_regex,key):
+			index = list(zip(*state.composition))[0].index(key)
+			new_name = re.match(lipid_regex,key).group(1)
+			state.composition[index][0] = new_name
+			renames.append([key,new_name])
+	#---copy ITP files and system-groups.ndx
+	#---! it might be worth standardizing this step
+	#---! need a systematic way to track groups
+	for itp in state.itp+['system-groups.ndx']:
+		shutil.copyfile(state.before[-1]['here']+itp,state.here+itp)
+	#---get the last frame
+	get_last_frame(gro='system-restrained')
+	struct = GMXStructure(state.here+'system-restrained.gro')
+	for old,new in renames: struct.residue_names[np.where(struct.residue_names==old)] = new
+	struct.write(state.here+'system.gro')

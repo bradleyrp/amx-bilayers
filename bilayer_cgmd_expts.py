@@ -194,4 +194,25 @@ mdp specs:|{
 
 """},
 
+'bilayer_release':{
+#####
+####
+###
+##
+#
+'script':'scripts/bilayer-release.py',
+'params':'parameters.py',
+'tags':['cgmd','bilayer'],
+'extensions':[
+    '@extras/*.py',
+    '@extras/geometry_tools/*.py',
+    'codes/*.py'],
+'settings':"""
+
+step: release
+force field: martini-sources
+sources: ['inputs/martini/martini-sources.ff']
+
+"""},
+
 }
