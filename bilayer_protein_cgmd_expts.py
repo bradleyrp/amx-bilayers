@@ -1,16 +1,6 @@
 {
 
-'bilayer_protein_dev':{
-#####
-####
-###
-##
-#
-'metarun':[
-{'step':'protein','do':'martinize'},
-{'step':'adhere','do':'bilayer_protein_adhesion_dev'}]},
-
-'bilayer_protein_adhesion_dev':{
+'bilayer_protein_adhesion':{
 #####
 ####
 ###
@@ -27,16 +17,15 @@
 
 USAGE NOTES:|
 	requires a pre-equilibrated, flat bilayer
-	...
-
+    gets the protein details automatically from state.protein_prepared
+    bilayer structure and force field are coded below, however you can override them in a metarun
+    since you can override in a metarun, we have only one adhesion routine
+	
 step: adhere
 
-########### HACKED. GET THE PROTEIN FROM THE LAST STEP AUTOMATICALLY vvvvvvv
-protein structure: s01-protein/protein.gro      # starting protein structure 
-protein topology: s01-protein/protein.top       # starting protein topology
-bilayer structure: inputs/previous/bilayer.gro  # starting bilayer structure
+bilayer structure: inputs/previous/bilayer.gro # starting bilayer structure
 
-landscape metadata: @martini/auto_ff/landscape.json    # colloquial types for different molecules
+landscape metadata: @martini/auto_ff/landscape.json # colloquial types for different molecules
 
 #---COPY DEPENDENCIES
 files:              []

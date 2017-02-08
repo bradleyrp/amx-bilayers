@@ -44,7 +44,7 @@ ny: 2
 ###
 ##
 #
-'script':'bilayer.py',
+'script':'scripts/bilayer.py',
 'params':'parameters.py',
 'tags':['cgmd','bilayer','free'],
 'extensions':[
@@ -118,7 +118,7 @@ mdp specs:|{
 ###
 ##
 #
-'script':'bilayer-flat.py',
+'script':'scripts/bilayer-flat.py',
 'params':'parameters.py',
 'tags':['cgmd','bilayer','free','flat'],
 'extensions':[

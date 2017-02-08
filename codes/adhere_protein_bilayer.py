@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os,shutil
+import os,shutil,glob
 import numpy as np
 from runner import DotDict
 from copy import deepcopy
@@ -15,6 +15,9 @@ def place_protein():
 	"""
 	Choose one of the protein placement options partitioned into functions below.
 	"""
+	#---in test sets the force field might change so we always pick it up from settings
+	if not settings.force_field: raise Exception('you must set the force field in the settings block')
+	state.force_field = settings.force_field
 	if not state.placement_method: raise Exception('need a `placement method` in the settings')
 	if state.placement_method == 'globular_up_down': place_protein_globular_up_down()
 	elif state.placement_method == 'banana': place_protein_banana()
@@ -26,15 +29,14 @@ def place_protein_globular_up_down():
 	#---for the globular_up_down method, the reference axis is the one the up/down axis is aligned to
 	reference_axis = state.q('reference_axis',[0,0,1])
 
-	#---read the bilayer and protein
-	bilayer = GMXStructure(state.bilayer_structure)
-	protein = GMXStructure(state.protein_structure)
-	#---store the bilayer composition
-	state.composition = bilayer.detect_composition()
+	#---get the protein structure from a dedicated variable
+	if not state.protein_prepared: raise Exception('this step requires state.protein_prepared')
+	protein_fn = state.protein_prepared['gro']
+	protein = GMXStructure(protein_fn)
 	
 	#---find the down and up groups
-	pts_down = protein.cog(*[protein.select(g) for g in make_list(state.group_down)])
-	pts_up = protein.cog(*[protein.select(g) for g in make_list(state.group_up)])
+	pts_down = protein.select_center(state.group_down)
+	pts_up = protein.select_center(state.group_up)
 	#---translate the down group to the origin
 	protein.points -= pts_down
 	#---identify the axis between the up and down groups
@@ -47,9 +49,9 @@ def place_protein_globular_up_down():
 	rotation = rotation_matrix(orthaxis,angle)
 	#---apply the rotation
 	protein.points = np.dot(protein.points,rotation)
-
-	import ipdb;ipdb.set_trace()
-	###
+	#---make sure the box is big enough if we want to check it in e.g. VMD
+	protein.box = protein.points.ptp(axis=0)-protein.points.min(axis=0)+1.0
+	protein.write(state.here+'protein-placed.gro')
 
 def lay_coords_flat(points,direction='y'):
 	"""
@@ -85,12 +87,13 @@ def place_protein_banana():
 	ref_axis,down_axis = np.zeros(3),np.zeros(3)
 	ref_axis['xyz'.index(direction)] = 1
 	down_axis['xyz'.index(direction_down)] = -1
+	#---get the protein structure from a dedicated variable
+	if not state.protein_prepared: raise Exception('this step requires state.protein_prepared')
+	protein_fn = state.protein_prepared['gro']
 	#---lay the protein flat along the direction
-	protein = GMXStructure(state.protein_structure)
+	protein = GMXStructure(protein_fn)
 	protein.points = lay_coords_flat(protein.points)
-	#---! consider generalizing the following cog calls (see the globular routine) 
-	#---! ...and adding them to GMXStructure
-	downer = protein.cog(*[protein.select(g) for g in make_list(state.group_down)])
+	downer = protein.select_center(state.group_down)
 	centroid = protein.cog(protein.select('all'))
 	coords = np.array(protein.points)
 	#---project the vector between centroid and downward-facing group onto the plane normal to the direction
@@ -105,7 +108,7 @@ def place_protein_banana():
 	#---write the modified structure
 	protein.points = coords_rotated
 	#---require an origin group to act as the reference point for the protein
-	pts_origin = protein.cog(*[protein.select(g) for g in make_list(state.group_origin)])
+	pts_origin = protein.select_center(state.group_origin)
 	protein.points -= pts_origin
 	#---make sure the box is big enough if we want to check it in e.g. VMD
 	protein.box = protein.points.ptp(axis=0)-protein.points.min(axis=0)+1.0
@@ -183,9 +186,10 @@ def adhere_protein_bilayer(gro,debug=False,**kwargs):
 		bilayer.add(protein_copy,before=True)
 
 	#---write the full system before running trim_waters
+	scale_method = atomistic_or_coarse()
 	bilayer.write(state.here+'combo-untrimmed.gro')
 	trim_waters(structure='combo-untrimmed',gro=gro,gap=state.protein_water_gap,
-		method=atomistic_or_coarse(),boxvecs=bilayer.box)
+		method=scale_method,boxvecs=bilayer.box)
 
 	#---! when to reionize ??
 	
@@ -196,13 +200,26 @@ def adhere_protein_bilayer(gro,debug=False,**kwargs):
 	if len(n_waters)!=1: raise Exception('incorrect number of water counts from detect_composition')
 	component(state.sol,count=n_waters[0])
 
-	#---! this is a MARTINI-specific way of getting the ITP files from the previous step
-	if 'aamd' in state.expt['tags'] and 'cgmd' not in state.expt['tags']: raise Exception('development')
-	if state.martinize_itps:
-		if not state.itp: state.itp = []
-		for fn in state.martinize_itps: 
-			shutil.copyfile(fn,state.here+os.path.basename(fn))
-			state.itp.append(os.path.basename(fn))
+	if scale_method=='aamd':
+		#---we expect that protein.itp is already present in the itp list 
+		#---lipid ITP might be in a separate place, so we get this directly from the landscape
+		#---the ITP must be copied in via sources or files in the settings
+		#---! later the landscape can generate these ITP files automatically
+		if 'protein_prepared' in state and 'itp' in state.protein_prepared:
+			shutil.copyfile(state.protein_prepared['itp'],
+				state.here+os.path.basename(state.protein_prepared['itp']))
+		for fn in [os.path.relpath(i,state.here) for i in glob.glob(state.here+state.extra_itps)]:
+			state.itp.append(fn)
+	elif scale_method=='cgmd':
+		#---handle martini ITP extraction
+		#---! note that we already use "protein_prepared" to get the gro file so perhaps we could use it for
+		#---! ...topology as well and eliminated the aamd/cgmd distinction here
+		if state.martinize_itps:
+			if not state.itp: state.itp = []
+			for fn in state.martinize_itps: 
+				shutil.copyfile(fn,state.here+os.path.basename(fn))
+				state.itp.append(os.path.basename(fn))
+	else: raise Exception('unclear scale: %s'%scale_method)
 
 	#---! only works for a single incoming protein type and corresponding ITP
 	collected_protein_itps = [GMXTopology(state.here+fn) for fn in state.itp]
@@ -288,6 +305,7 @@ def remove_ions(structure,gro):
 	struct.remove(ion_inds)
 	struct.write(state.here+gro+'.gro')
 	struct.detect_composition()
+	state.water_without_ions = component(state.sol)
 	#---! hard-coded for cgmd
 	land = Landscape('martini')
 	#---remove ions from the composition by the molecule name returned as a key in Landscape.objects

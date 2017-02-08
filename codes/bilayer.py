@@ -198,6 +198,8 @@ def build_bilayer(name,random_rotation=True):
 	#---save the slab dimensions for solvation
 	boxdims_old,boxdims = get_box_vectors(name)
 	state.bilayer_dimensions_slab = boxdims
+	#---this function is *always* a start point even in the middle of a test set so we reset composition
+	if 'composition' in state: del state['composition']
 	#---save composition for topology
 	for lipid_num,lipid in enumerate(lipid_order):
 		component(lipid,count=len(placements[lipid_num]))
