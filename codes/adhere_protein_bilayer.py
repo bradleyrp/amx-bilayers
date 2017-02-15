@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os,shutil,glob
+import os,shutil,glob,re
 import numpy as np
 from runner import DotDict
 from copy import deepcopy
@@ -224,10 +224,22 @@ def adhere_protein_bilayer(gro,debug=False,**kwargs):
 	#---! only works for a single incoming protein type and corresponding ITP
 	collected_protein_itps = [GMXTopology(state.here+fn) for fn in state.itp]
 	molecules = dict([j for k in [i.molecules.items() for i in collected_protein_itps] for j in k])
-	if len(molecules)>1: 
-		raise Exception('more than one molecule on incoming ITPs which should be protein-only')
-	protein_molecule_name = list(molecules.keys())[0]
+	"""
+	in martini we typically have the lipids in the ff and a single incoming protein.itp
+	however in aamd we may have lipid itp files as well. the construction procedure always places proteins
+	first, so in the event that we have multiple ITP files in state.itp we fish out the protein one and place
+	it first in line in the composition and then just hope for the best
+	"""
+	if len(molecules)>1:
+		molecule_names_protein = [i for i in molecules.keys() if re.search('(P|p)rotein',i)]
+		if len(molecule_names_protein)!=1: 
+			raise Exception('we need to fish out only a single protein from the molecule list but we got: %s'%
+				molecule_names_protein)
+		protein_molecule_name = molecule_names_protein[0]
+	else: protein_molecule_name = list(molecules.keys())[0]
 	state.composition = [[protein_molecule_name,total_proteins]] + state.composition
+	land = Landscape()
+	state.lipids = [i for i in list(zip(*state.composition))[0] if i in Landscape().lipids()]
 
 def recenter_protein_bilayer(structure,gro):
 	"""
@@ -244,7 +256,7 @@ def detect_lipids(structure):
 	"""
 	#---! curently detect_Lipids and detect ions is only necessary for bilayer sorter -- move it there??
 	#---! hard-coded martini landscape
-	land = Landscape('martini')
+	land = Landscape()
 	bilayer = GMXStructure(state.here+structure+'.gro')
 	lipids = land.lipids()
 	#---! hack for restraint-named lipids
@@ -255,7 +267,7 @@ def detect_ions(structure):
 	"""
 	"""
 	#---! hard-coded martini landscape
-	land = Landscape('martini')
+	land = Landscape()
 	bilayer = GMXStructure(state.here+structure+'.gro')
 	#---! identifying ions should be left to the Landscape itself since it can decide on NA+ ION vs NA NA
 	cations = [i for i in np.unique(bilayer.atom_names) if i in land.cations()]
@@ -307,7 +319,7 @@ def remove_ions(structure,gro):
 	struct.detect_composition()
 	state.water_without_ions = component(state.sol)
 	#---! hard-coded for cgmd
-	land = Landscape('martini')
+	land = Landscape()
 	#---remove ions from the composition by the molecule name returned as a key in Landscape.objects
 	for i in land.my(struct,'anions')+land.my(struct,'cations'): 
 		if i in list(zip(*state.composition))[0]: component(i,count=0)

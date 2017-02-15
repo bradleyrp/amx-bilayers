@@ -13,8 +13,9 @@
 start structure: inputs/structure-repo/proteins/gel-prepped.pdb
 
 step: protein                       # name of the folder is s01-protein
-force field: charmm27               # which gromacs-standard force-field to use (see pdb2gmx list)
-water: tip3p                        # which water model (another questi
+force field: charmm36               # which gromacs-standard force-field to use (see pdb2gmx list)
+sources: ['@charmm/charmm36.ff']    # grab a local copy of charmm36.ff
+water: tip3p                        # which water model (another question from pdb2gmx)
 
 """},
 {'step':'protein','do':'bilayer_protein_adhesion_aamd','settings':"""
@@ -25,6 +26,37 @@ placement method: banana                 # several distinct methods to choose fr
 group up: resid 161                      # banana method: this group points up *after* laying the banana flat
 group down: ['resid 150','resid 169']    # banana method: this group points down *after* laying the banana flat
 group origin: ['resid 150','resid 169']  # reference/pivot point for the protein (set to origin)
+
+"""},
+]},
+
+'bilayer_protein_aamd_banana_ion_change':{
+#####
+####
+###
+##
+#
+'metarun':[
+{'step':'protein','do':'bilayer_protein_topology_only','settings':"""
+
+#---PROTEIN START STRUCTURE
+start structure: inputs/structure-repo/proteins/gel-prepped.pdb
+
+step: protein                       # name of the folder is s01-protein
+force field: charmm36               # which gromacs-standard force-field to use (see pdb2gmx list)
+sources: ['@charmm/charmm36.ff']    # grab a local copy of charmm36.ff
+water: tip3p                        # which water model (another question from pdb2gmx)
+
+"""},
+{'step':'protein','do':'bilayer_protein_adhesion_aamd','settings':"""
+
+bilayer structure: inputs/structure-repo/bilayers-aamd/bilayer-pip2-20pct-top-ow-dopc-dops-4to1.gro
+
+placement method: banana                 # several distinct methods to choose from (see other expts)
+group up: resid 161                      # banana method: this group points up *after* laying the banana flat
+group down: ['resid 150','resid 169']    # banana method: this group points down *after* laying the banana flat
+group origin: ['resid 150','resid 169']  # reference/pivot point for the protein (set to origin)
+cation: MG                               # we change the cation on the adhesion step
 
 """},
 ]},
@@ -60,7 +92,7 @@ files:              []
 sources:            ['@charmm/charmm36.ff','@charmm/lipid-tops']
 
 #---FORCE FIELD
-force field: charmm # note non-standard force fields must be copied via "sources"
+force field: charmm36 # note non-standard force fields must be copied via "sources"
 extra itps: 'lipid-tops/lipid*itp'
 landscape metadata: @charmm/landscape.json # colloquial types for different molecules
 
