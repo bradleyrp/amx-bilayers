@@ -51,6 +51,7 @@
 	'restrain':{
 		'posre':{'define':'-DPOSRES'},
 		#---"posre-com-only": keep position restraints off because we set them manually in the ITP
+		#---...and we also turn on refcoord-scaling to avoid gromacs warnings with pressure coupling
 		'posre-com-only':{'refcoord-scaling':'com'},
 		'none':{},
 		},			
@@ -89,6 +90,10 @@
 			'comm-grps':'LIPIDS SOLVENT PROTEIN',
 			'energygrps':'LIPIDS SOLVENT PROTEIN',
 			},
+		'protein-water':{
+			'comm-grps':'SOLVENT PROTEIN',
+			'energygrps':'SOLVENT PROTEIN',
+			},
 		'blank':{},
 		},
 	'output':{
@@ -123,6 +128,12 @@
 			'tc-grps':'LIPIDS SOLVENT PROTEIN',
 			'tau_t':'1.0 1.0 1.0',
 			'ref_t':'320 320 320',
+			},
+		'protein-water':{
+			'tcoupl':'v-rescale',
+			'tc-grps':'SOLVENT PROTEIN',
+			'tau_t':'1.0 1.0',
+			'ref_t':'320 320',
 			},
 		'protein-vacuum':{
 			'tcoupl':'v-rescale',
