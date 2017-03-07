@@ -60,7 +60,7 @@ register_file('system-leaflets-flat.gro')
 register_gmx_call(
 	command='grompp',flag='r',
 	value='system-leaflets-flat.gro')
-restart_clean(part=2,
-	structure='system-leaflets',
-	groups='system-groups')
-
+for rnum,mdp in enumerate(state.flat_restart_mdps):
+	restart_clean(part=rnum+2,mdp=mdp,
+		structure='system-leaflets',
+		groups='system-groups')
