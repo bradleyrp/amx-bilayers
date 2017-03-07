@@ -21,6 +21,7 @@ def place_protein():
 	if not state.placement_method: raise Exception('need a `placement method` in the settings')
 	if state.placement_method == 'globular_up_down': place_protein_globular_up_down()
 	elif state.placement_method == 'banana': place_protein_banana()
+	else: raise Exception('undeveloped placement method: %s'%state.placement_method)
 
 def place_protein_globular_up_down():
 	"""
@@ -205,9 +206,11 @@ def adhere_protein_bilayer(gro,debug=False,**kwargs):
 		#---lipid ITP might be in a separate place, so we get this directly from the landscape
 		#---the ITP must be copied in via sources or files in the settings
 		#---! later the landscape can generate these ITP files automatically
-		if 'protein_prepared' in state and 'itp' in state.protein_prepared:
-			shutil.copyfile(state.protein_prepared['itp'],
-				state.here+os.path.basename(state.protein_prepared['itp']))
+		if 'protein_prepared' in state:
+			for item in ['itp','posre']:
+				if item in state.protein_prepared:
+					shutil.copyfile(state.protein_prepared[item],
+						state.here+os.path.basename(state.protein_prepared[item]))
 		for fn in [os.path.relpath(i,state.here) for i in glob.glob(state.here+state.extra_itps)]:
 			state.itp.append(fn)
 	elif scale_method=='cgmd':

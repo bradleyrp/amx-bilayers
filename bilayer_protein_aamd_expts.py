@@ -61,6 +61,52 @@ cation: MG                               # we change the cation on the adhesion 
 """},
 ]},
 
+'bilayer_protein_aamd_globular_ions_restraints':{
+#####
+####
+###
+##
+#
+'metarun':[
+{'step':'protein','do':'bilayer_protein_topology_only','settings':"""
+
+#---PROTEIN START STRUCTURE
+start structure: inputs/structure-repo/proteins/nwasp-peptide.pdb
+
+step: protein                       # name of the folder is s01-protein
+force field: charmm36               # which gromacs-standard force-field to use (see pdb2gmx list)
+sources: ['@charmm/charmm36.ff']    # grab a local copy of charmm36.ff
+water: tip3p                        # which water model (another question from pdb2gmx)
+
+"""},
+{'step':'protein','do':'bilayer_protein_adhesion_aamd','settings':"""
+
+bilayer structure: inputs/structure-repo/bilayers-aamd/bilayer-pip2-20pct-phys-drop.gro
+
+placement method: globular_up_down       # several distinct methods to choose from (see other expts)
+group up: all                            # globular_up_down method: this group points up
+group down: ['resid 12-16']              # globular_up_down method: this group points down
+group origin: ['resid 12-16']            # reference/pivot point for the protein (set to origin)
+cation: MG                               # any bilayer_protein_adhesion_aamd step can use different ions
+
+#---note we must set the equilibration flag otherwise it jumps to production
+equilibration: npt-bilayer-short,npt-restrain-protein
+#---note that we override mdp specs from the original
+mdp specs:|{
+    'group':'aamd',
+    'mdps':{
+         'input-em-steep-in.mdp':['minimize',{'potential':'verlet','emtol':10}],
+         'input-md-npt-bilayer-short-eq-in.mdp':['npt-bilayer-protein-simple',
+            {'restrain':'posre','nsteps':50000,'dt':0.0005}],
+         'input-md-npt-restrain-protein-eq-in.mdp':['npt-bilayer-protein-simple',
+            {'restrain':'posre','nsteps':50000,'dt':0.002}],
+         'input-md-in.mdp':['npt-bilayer-protein'],
+        },
+    }
+
+"""},
+]},
+
 'bilayer_protein_adhesion_aamd':{
 #####
 ####
