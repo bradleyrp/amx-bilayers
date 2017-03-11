@@ -493,7 +493,7 @@ def release_restraints():
 	#---copy ITP files and system-groups.ndx
 	#---! it might be worth standardizing this step
 	#---! need a systematic way to track groups
-	for itp in state.itp+['system-groups.ndx']:
+	for itp in (state.itp or [])+['system-groups.ndx']:
 		shutil.copyfile(state.before[-1]['here']+itp,state.here+itp)
 	#---get the last frame
 	get_last_frame(gro='system-restrained')

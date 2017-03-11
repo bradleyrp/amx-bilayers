@@ -211,7 +211,9 @@ mdp specs:|{
 
 step: release
 force field: martini-sources
-sources: ['inputs/martini/martini-sources.ff']
+sources: ['@martini/martini-sources.ff']
+bilayer structure: @structure-repo/bilayers-cgmd/stock-bilayer-v00.gro
+lipids: ['DOPC','DOPS']
 
 """},
 
