@@ -213,8 +213,21 @@ step: release
 force field: martini-sources
 sources: ['@martini/martini-sources.ff']
 bilayer structure: @structure-repo/bilayers-cgmd/stock-bilayer-v00.gro
-lipids: ['DOPC','DOPS']
 
+#---EQUILIBRATION
+equilibration: npt-bilayer-short,npt-bilayer
+mdp specs:|{
+    'group':'cgmd',
+    'mdps':{
+        'input-md-npt-bilayer-short-eq-in.mdp':['npt-bilayer',
+            {'pressure':'npt-semiisotropic-weak','dt':0.001,'nsteps':10000}],
+        'input-md-npt-bilayer-eq-in.mdp':['npt-bilayer',
+            {'restrain':'posre-com-only','pressure':'npt-semiisotropic-weak','dt':0.01,'nsteps':10000}],
+        'input-md-in.mdp':[{'restrain':'posre-com-only','pressure':'npt-semiisotropic-weak',
+            'nsteps':100000}],
+        },
+    }
+    
 """},
 
 }

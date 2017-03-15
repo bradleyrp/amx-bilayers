@@ -498,5 +498,11 @@ def release_restraints():
 	#---get the last frame
 	get_last_frame(gro='system-restrained')
 	struct = GMXStructure(state.here+'system-restrained.gro')
-	for old,new in renames: struct.residue_names[np.where(struct.residue_names==old)] = new
+	for old,new in renames: 
+		#---rename residues
+		struct.residue_names[np.where(struct.residue_names==old)] = new
+		#---rename lipids
+		state.lipids[state.lipids.index(old)] = new
 	struct.write(state.here+'system.gro')
+	#---update the force field according to the settings
+	state.force_field = settings.force_field
