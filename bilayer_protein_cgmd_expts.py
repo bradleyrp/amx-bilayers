@@ -20,7 +20,7 @@ USAGE NOTES:|
     gets the protein details automatically from state.protein_prepared
     bilayer structure and force field are coded below, however you can override them in a metarun
     since you can override in a metarun, we have only one adhesion routine
-	
+
 step: adhere
 
 bilayer structure: inputs/previous/bilayer.gro # starting bilayer structure

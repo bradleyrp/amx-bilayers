@@ -38,7 +38,7 @@ nx: 2
 ny: 2
 """}]},
 
-'bilayer_control':{
+'bilayer_control_cgmd':{
 #####
 ####
 ###
