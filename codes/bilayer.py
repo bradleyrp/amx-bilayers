@@ -42,10 +42,10 @@ def makeshape():
 	lz = state.q('solvent_thickness')
 	binsize = state.q('binsize')
 	#---are the monolayers symmetric?
-	monolayer_other = state.q('monolayer_other',None)
-	composition_other = state.q('composition_other',None)
+	monolayer_other = state.q('monolayer_bottom',None)
+	composition_other = state.q('composition_bottom',None)
 	if not monolayer_other and composition_other or not composition_other and monolayer_other:
-		raise Exception('you must specify both "monolayer other" and "composition other"')
+		raise Exception('you must specify both "monolayer bottom" and "composition bottom"')
 	monolayers = [[state.q('monolayer_top'),state.q('composition_top')]]
 
 	if monolayer_other: monolayers += [[monolayer_other,composition_other]]
