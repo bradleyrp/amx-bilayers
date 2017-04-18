@@ -134,6 +134,8 @@ def build_bilayer(name,random_rotation=True):
 		if sum(complist) != 1.0: complist = [float(i)/sum(complist) for i in complist]
 		nlipids = [nlipids0,nlipids1][mn]
 		counts = np.array([int(round(i)) for i in np.array(complist)*nlipids])
+		if sum(counts)!=nlipids:
+			raise Exception('rounding error between your composition and total lipid counts')
 		identities[mn] = np.concatenate([np.ones(counts[ii])*lipid_order.index(lname) 
 			for ii,lname in enumerate(names)])[np.array(sorted(range(nlipids),
 			key=lambda *args:random.random()))]
@@ -215,7 +217,7 @@ def lipid_upright():
 	import ipdb;ipdb.set_trace()
 	sys.exit(1)
 
-def distinguish_leaflets(structure='incoming',gro='outgoing',indices='dat-monolayer-indices.py'):
+def distinguish_leaflets(structure='incoming',gro='outgoing',samename=False,indices='dat-monolayer-indices.py'):
 	"""
 	Take a gro file and some knowledge about leaflets and distinguish them.
 	"""
@@ -226,7 +228,9 @@ def distinguish_leaflets(structure='incoming',gro='outgoing',indices='dat-monola
 	resnames = [i for i in np.unique(np.array(struct.residue_names,dtype='|S5')) 
 		if i.decode() not in not_lipids]
 	#---only label the bottom leaflet because that one will start with restraints
-	renamer = dict([(i,{'top':i+b'','bot':i+b'R'}) for i in resnames])
+	#---! added samename flag to turn this off for bilayer-careful
+	renamer = dict([(i,{'top':i+b'' if not samename else i+b'',
+		'bot':i+b'R' if not samename else i+b''}) for i in resnames])
 	#---rename residues by leaflet
 	leaflet_index_convetion = {'top':0,'bot':1}
 	residue_indices = np.array(struct.residue_indices)
@@ -280,7 +284,8 @@ def distinguish_leaflets(structure='incoming',gro='outgoing',indices='dat-monola
 
 	#---GMXStructure already knows how to get the right composition
 	state.composition = struct.detect_composition()
-	state.lipids = [i for i in list(zip(*state.composition))[0] if i not in [state.sol,state.anion,state.cation]]
+	state.lipids = [i for i in list(zip(*state.composition))[0] 
+		if i not in [state.sol,state.anion,state.cation]]
 	#---force field swapping happens in the parent script
 
 def remove_jump(structure,tpr,gro,pbc='nojump'):

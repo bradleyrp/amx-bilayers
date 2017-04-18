@@ -195,6 +195,7 @@
 	},
 'restrain':{
 	'posre':{'define':'-DPOSRES'},
+	'posre-com-only':{'refcoord-scaling':'com'},
 	'none':{},
 	},	
 'screening':{
