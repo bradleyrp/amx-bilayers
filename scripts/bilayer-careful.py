@@ -45,23 +45,17 @@ bilayer_sorter(
 	ndx='system-groups')
 #---relax with fixed area and upright restraints
 write_top('system.top')
-distinguish_leaflets(
-	samename=True,
-	structure='counterions',
-	gro='system-leaflets',
-	indices='dat-monolayer-indices.py')
-bilayer_flatten_for_restraints(
-	structure='system-leaflets',
-	gro='system-leaflets-flat')
-#---! removed: register_file('system-leaflets-flat.gro')
-#register_gmx_call(
-#	command='grompp',flag='r',
-#	value='system-leaflets-flat.gro')
-equilibrate(groups='system-groups',stages_only=True)
-#---release restraints and restart
+#---note no persistent restraint positions
+equilibrate(
+	seq=state.equilibrate_restrain,
+	groups='system-groups',
+	stages_only=True)
+#---release restraints and continue
 state.force_field = settings.force_field
 move_file('system.top','system-restrain.top')
 write_top('system.top')
-restart_clean(part=1,
-	structure='md-npt-bilayer',
-	groups='system-groups')
+equilibrate(
+	structure=state.equilibrate_restrain_final,
+	seq=state.equilibrate_free,
+	groups='system-groups',
+	stages_only=False)
