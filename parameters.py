@@ -171,6 +171,13 @@
 			'compressibility':'3e-4 3e-4',
 			'ref_p':'1.0 1.0',
 			},
+		'npt-semiisotropic-weakest':{
+			'Pcoupl':'Berendsen',
+			'Pcoupltype':'semiisotropic',
+			'tau_p':1.0,
+			'compressibility':'5e-5 5e-5',
+			'ref_p':'1.0 1.0',
+			},
 		'nvt':{'Pcoupl':'no'}
 		},
 	#---override for NPT bilayer and solvent
