@@ -194,7 +194,7 @@ mdp specs:|{
 
 """},
 
-'bilayer_release':{
+'bilayer_release_new_mdp':{
 #####
 ####
 ###
@@ -228,6 +228,23 @@ mdp specs:|{
         },
     }
     
+"""},
+
+'bilayer_release':{
+#####
+####
+###
+##
+#
+'script':'scripts/bilayer-release.py',
+'params':'parameters.py',
+'tags':['cgmd','bilayer'],
+'extensions':[
+    '@extras/*.py',
+    '@extras/geometry_tools/*.py',
+    'codes/*.py'],
+'settings':"""
+step: release
 """},
 
 }

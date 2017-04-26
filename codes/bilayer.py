@@ -510,4 +510,4 @@ def release_restraints():
 		state.lipids[state.lipids.index(old)] = new
 	struct.write(state.here+'system.gro')
 	#---update the force field according to the settings
-	state.force_field = settings.force_field
+	state.force_field = state.q('force_field')

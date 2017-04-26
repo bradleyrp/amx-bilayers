@@ -227,7 +227,7 @@ def adhere_protein_bilayer(gro,debug=False,**kwargs):
 	#---! only works for a single incoming protein type and corresponding ITP
 	collected_protein_itps = [GMXTopology(state.here+fn) for fn in state.itp]
 	molecules = dict([j for k in [i.molecules.items() for i in collected_protein_itps] for j in k])
-	if True:
+	if not state.q('two_protein_hack',False):
 		"""
 		in martini we typically have the lipids in the ff and a single incoming protein.itp
 		however in aamd we may have lipid itp files as well. the construction procedure always places proteins
