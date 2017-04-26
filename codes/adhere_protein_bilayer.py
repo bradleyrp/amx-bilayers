@@ -109,7 +109,9 @@ def place_protein_banana():
 	#---write the modified structure
 	protein.points = coords_rotated
 	#---require an origin group to act as the reference point for the protein
-	pts_origin = protein.select_center(state.group_origin)
+	group_origin = state.q('group_origin')
+	if not group_origin: raise Exception('banana requires group_origin or group_down in the settings')
+	pts_origin = protein.select_center(group_origin)
 	protein.points -= pts_origin
 	#---make sure the box is big enough if we want to check it in e.g. VMD
 	protein.box = protein.points.ptp(axis=0)-protein.points.min(axis=0)+1.0
@@ -256,7 +258,7 @@ def adhere_protein_bilayer(gro,debug=False,**kwargs):
 		#else: protein_molecule_name = list(molecules.keys())[0]
 		protein_molecule_name = molecule_names_protein[0]
 		#---rpb sets total_proteins below to get the PT hack to work
-		#total_proteins = 1
+		total_proteins = 2
 		state.composition = [[protein_molecule_name,total_proteins]] + state.composition
 		land = Landscape()
 		state.lipids = [i for i in list(zip(*state.composition))[0] if i in Landscape().lipids()]

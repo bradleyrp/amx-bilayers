@@ -23,12 +23,12 @@ martinize flags: -ed
 martinize ff: martini22
 """},
 {'step':'adhere','do':'bilayer_protein_adhesion','settings':"""
-USAGE NOTES:|
 force field: martini_upright_alt
 sources: ['@martini/auto_ff/martini_upright_alt.ff']
 placement method: banana
 group up: ['resid 470']
 group down: ['resid 110','resid 280']
+group origin: ['resid 110','resid 280']
 bilayer structure: @structure-repo/bilayers-cgmd/v813.gro
 protein water gap: 3
 protein_lattice:|{'banana_direction':'x','nrows':1,'ncols':1,'lattice_type':'square',
@@ -39,9 +39,9 @@ mdp specs:|{
     'mdps':{
         'input-em-steep-in.mdp':['minimize'],
         'input-md-short-eq-in.mdp':[{'restrain':'posre-com-only','pressure':'npt-semiisotropic-weak',
-            'nsteps':50000,'groups':'protein','temperature':'protein','dt':0.005}],
+            'nsteps':10000,'groups':'protein','temperature':'protein','dt':0.005}],
         'input-md-in.mdp':[{'restrain':'posre-com-only',
-            'nsteps':100000,'groups':'protein','temperature':'protein'}],
+            'nsteps':50000,'groups':'protein','temperature':'protein'}],
         },
     }
 two protein hack: True
