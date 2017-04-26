@@ -135,7 +135,7 @@ bilayer structure: None
 
 #---COPY DEPENDENCIES
 files:              []
-sources:            ['@charmm/charmm36.ff','@charmm/lipid-tops']
+sources:            ['@charmm/charmm36.ff']
 
 #---FORCE FIELD
 force field: charmm36 # note non-standard force fields must be copied via "sources"

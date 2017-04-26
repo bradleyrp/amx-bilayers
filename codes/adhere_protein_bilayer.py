@@ -227,7 +227,7 @@ def adhere_protein_bilayer(gro,debug=False,**kwargs):
 	#---! only works for a single incoming protein type and corresponding ITP
 	collected_protein_itps = [GMXTopology(state.here+fn) for fn in state.itp]
 	molecules = dict([j for k in [i.molecules.items() for i in collected_protein_itps] for j in k])
-	if False:
+	if True:
 		"""
 		in martini we typically have the lipids in the ff and a single incoming protein.itp
 		however in aamd we may have lipid itp files as well. the construction procedure always places proteins
@@ -244,21 +244,22 @@ def adhere_protein_bilayer(gro,debug=False,**kwargs):
 		state.composition = [[protein_molecule_name,total_proteins]] + state.composition
 		land = Landscape()
 		state.lipids = [i for i in list(zip(*state.composition))[0] if i in Landscape().lipids()]
-	#---from PT a slightly more elegant hack
-	molecule_names_protein = [i for i in molecules.keys() if re.search('(P|p)rotein',i)]
-	#if len(molecules)>1:
-	#	molecule_names_protein = [i for i in molecules.keys() if re.search('(P|p)rotein',i)]
-	#	if len(molecule_names_protein)!=1: 
-	#		raise Exception('we need to fish out only a single protein from the molecule list but we got: %s'%
-	#			molecule_names_protein)
-	#	protein_molecule_name = molecule_names_protein[0]
-	#else: protein_molecule_name = list(molecules.keys())[0]
-	protein_molecule_name = molecule_names_protein[0]
-	#---rpb sets total_proteins below to get the PT hack to work
-	total_proteins = 2
-	state.composition = [[protein_molecule_name,total_proteins]] + state.composition
-	land = Landscape()
-	state.lipids = [i for i in list(zip(*state.composition))[0] if i in Landscape().lipids()]
+	else:
+		#---from PT a slightly more elegant hack
+		molecule_names_protein = [i for i in molecules.keys() if re.search('(P|p)rotein',i)]
+		#if len(molecules)>1:
+		#	molecule_names_protein = [i for i in molecules.keys() if re.search('(P|p)rotein',i)]
+		#	if len(molecule_names_protein)!=1: 
+		#		raise Exception('we need to fish out only a single protein from the molecule list but we got: %s'%
+		#			molecule_names_protein)
+		#	protein_molecule_name = molecule_names_protein[0]
+		#else: protein_molecule_name = list(molecules.keys())[0]
+		protein_molecule_name = molecule_names_protein[0]
+		#---rpb sets total_proteins below to get the PT hack to work
+		#total_proteins = 1
+		state.composition = [[protein_molecule_name,total_proteins]] + state.composition
+		land = Landscape()
+		state.lipids = [i for i in list(zip(*state.composition))[0] if i in Landscape().lipids()]
 
 def recenter_protein_bilayer(structure,gro):
 	"""
