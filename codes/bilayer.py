@@ -112,8 +112,9 @@ def build_bilayer(name,random_rotation=True):
 	nlipids0 = state.q('monolayer_top')
 	if not state.q('monolayer_bottom') or not state.q('monolayer_bottom'): nlipids1 = nlipids0
 	else: nlipids1 = state.q('monolayer_bottom')
-	lipid_resnames = list(state.q('composition_top').keys())
-	if state.q('composition_bottom'): lipid_resnames += state.q('composition_bottom').keys()
+	lipid_resnames = list([k for k,v in state.q('composition_top').items() if v>0.0])
+	if state.q('composition_bottom'): 
+		lipid_resnames += list([k for k,v in state.q('composition_bottom').items() if v>0.0])
 	#---save for bilayer_sorter
 	state.lipids = list(set(lipid_resnames))
 
@@ -284,6 +285,7 @@ def distinguish_leaflets(structure='incoming',gro='outgoing',samename=False,indi
 
 	#---GMXStructure already knows how to get the right composition
 	state.composition = struct.detect_composition()
+	#---! add protection here for zero composition because make_ndx fails if state.lipids has too much
 	state.lipids = [i for i in list(zip(*state.composition))[0] 
 		if i not in [state.sol,state.anion,state.cation]]
 	#---force field swapping happens in the parent script
