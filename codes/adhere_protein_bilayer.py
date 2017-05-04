@@ -202,7 +202,6 @@ def adhere_protein_bilayer(gro,debug=False,**kwargs):
 	n_waters = [j for i,j in combo.detect_composition() if i==state.sol]
 	if len(n_waters)!=1: raise Exception('incorrect number of water counts from detect_composition')
 	component(state.sol,count=n_waters[0])
-
 	if scale_method=='aamd':
 		#---we expect that protein.itp is already present in the itp list 
 		#---lipid ITP might be in a separate place, so we get this directly from the landscape
@@ -225,6 +224,8 @@ def adhere_protein_bilayer(gro,debug=False,**kwargs):
 				shutil.copyfile(fn,state.here+os.path.basename(fn))
 				state.itp.append(os.path.basename(fn))
 	else: raise Exception('unclear scale: %s'%scale_method)
+
+
 
 	#---! only works for a single incoming protein type and corresponding ITP
 	collected_protein_itps = [GMXTopology(state.here+fn) for fn in state.itp]
@@ -280,7 +281,7 @@ def detect_lipids(structure):
 	#---! hard-coded martini landscape
 	land = Landscape()
 	bilayer = GMXStructure(state.here+structure+'.gro')
-	lipids = land.lipids()
+	lipids = land.lipids() + land.sterols()
 	#---! hack for restraint-named lipids
 	lipids += ['%sR'%i for i in lipids if len(i)==4]
 	state.lipids = [i for i in lipids if i in np.unique(bilayer.residue_names)]
