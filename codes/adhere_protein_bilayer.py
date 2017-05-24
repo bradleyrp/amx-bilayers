@@ -97,9 +97,9 @@ def place_protein_banana():
 	protein.points = lay_coords_flat(protein.points,direction=direction)
 	downer = protein.select_center(state.group_down)
 	centroid = protein.cog(protein.select('all'))
+	coords = np.array(protein.points)
 	#---note that previous version of the banana routine mistakenly omitted the mean-centering
 	coords -= centroid
-	coords = np.array(protein.points)
 	#---project the vector between centroid and downward-facing group onto the plane normal to the direction
 	axis = vecnorm(downer-centroid)
 	principal = vecnorm(principal_axis(coords))
