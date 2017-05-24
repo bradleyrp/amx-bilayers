@@ -8,6 +8,7 @@ import scipy
 
 _not_reported = ['lay_coords_flat','make_list']
 _not_all = ['deepcopy']
+_shared_extensions = ['lay_coords_flat']
 
 make_list = lambda x : x if type(x)==list else [x]
 
@@ -96,6 +97,8 @@ def place_protein_banana():
 	protein.points = lay_coords_flat(protein.points,direction=direction)
 	downer = protein.select_center(state.group_down)
 	centroid = protein.cog(protein.select('all'))
+	#---note that previous version of the banana routine mistakenly omitted the mean-centering
+	coords -= centroid
 	coords = np.array(protein.points)
 	#---project the vector between centroid and downward-facing group onto the plane normal to the direction
 	axis = vecnorm(downer-centroid)
@@ -106,6 +109,8 @@ def place_protein_banana():
 	rotation = rotation_matrix(principal,-1*rotation_angle)
 	#---apply the rotation
 	coords_rotated = np.dot(coords,rotation)
+	#---shift back to the original centroid now that rotation is complete
+	coords_rotated += centroid
 	#---write the modified structure
 	protein.points = coords_rotated
 	#---require an origin group to act as the reference point for the protein
