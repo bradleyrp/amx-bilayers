@@ -102,7 +102,9 @@ def place_protein_banana():
 	coords -= centroid
 	#---project the vector between centroid and downward-facing group onto the plane normal to the direction
 	axis = vecnorm(downer-centroid)
-	principal = vecnorm(principal_axis(coords))
+	#---! previously used: principal = vecnorm(principal_axis(coords))
+	#---! ...however the lay flat procedure might not be perfect, so we use the reference axis instead
+	principal = np.array(ref_axis)
 	projected = vecnorm(plane_project(axis,principal))
 	#---rotate protein along the direction so the axis points down
 	rotation_angle = vecangle(down_axis,projected)
