@@ -106,7 +106,8 @@ def place_protein_banana():
 	projected = vecnorm(plane_project(axis,principal))
 	#---rotate protein along the direction so the axis points down
 	rotation_angle = vecangle(down_axis,projected)
-	rotation = rotation_matrix(principal,-1*rotation_angle)
+	#---! removed a buggy multiplicative inverse on the rotation angle below
+	rotation = rotation_matrix(principal,rotation_angle)
 	#---apply the rotation
 	coords_rotated = np.dot(coords,rotation)
 	#---shift back to the original centroid now that rotation is complete
