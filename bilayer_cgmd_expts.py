@@ -175,6 +175,9 @@ force field:           martini-sources      # specify the name of the force fiel
 force field upright:   martini_upright      # force field with "upright" vacuum pack restraints
 force field flat:      martini_upright_alt  # force field with alternate lipids for remaining flat
 
+#---list of MDPs to use when running a flat bilayer
+flat_restart_mdps: ['input-md-npt-bilayer-eq-in','input-md-in']
+
 #---EQUILIBRATION
 equilibration:      npt-bilayer
 mdp specs:|{
