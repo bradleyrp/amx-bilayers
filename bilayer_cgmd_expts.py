@@ -66,7 +66,7 @@ aspect:             1.0             # XY proportion for flat bilayers
 binsize:            1.2             # grid spacing for initial lipid configuration
 monolayer offset:   1.5             # initial distance between leaflets 
 monolayer top:      90              # number of lipids in the top leaflet
-monolayer bottom:   None            # number of lipids in the bottom leaflet (none for symmetric)
+monolayer bottom:   90              # number of lipids in the bottom leaflet (none for symmetric)
 
 lipid structures:   inputs/martini/library-lipidome-structs  # folder for lipid structures and yaml metadata
 landscape metadata: inputs/martini/auto_ff/landscape.json    # colloquial types for different molecules
@@ -143,7 +143,7 @@ aspect:             1.0             # XY proportion for flat bilayers
 binsize:            1.2             # grid spacing for initial lipid configuration
 monolayer offset:   1.5             # initial distance between leaflets 
 monolayer top:      90              # number of lipids in the top leaflet
-monolayer bottom:   None            # number of lipids in the bottom leaflet (none for symmetric)
+monolayer bottom:   90              # number of lipids in the bottom leaflet (none for symmetric)
 
 lipid structures:   inputs/martini/library-lipidome-structs/  # folder for lipid structures and yaml metadata
 landscape metadata: inputs/martini/auto_ff/landscape.json     # colloquial types for different molecules
