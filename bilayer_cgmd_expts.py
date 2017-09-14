@@ -1,43 +1,5 @@
 {
 
-'bilayer_control_multiply':{
-#####
-####
-###
-##
-#
-'metarun':[
-{'step':'bilayer','do':'bilayer_control'},
-{'step':'large','do':'multiply','settings':"""
-step: large
-requires: multiply
-equilibration: npt-bilayer-short,npt-bilayer
-minimize: True
-proceed: True
-genconf gap: 0.3
-nx: 2
-ny: 2
-"""}]},
-
-'bilayer_control_flat_multiply':{
-#####
-####
-###
-##
-#
-'metarun':[
-{'step':'bilayer','do':'bilayer_control_flat'},
-{'step':'large','do':'multiply','settings':"""
-step: large
-requires: multiply
-equilibration: npt-bilayer-short,npt-bilayer
-minimize: True
-proceed: True
-genconf gap: 0.3
-nx: 2
-ny: 2
-"""}]},
-
 'bilayer_control_cgmd':{
 #####
 ####
@@ -46,7 +8,7 @@ ny: 2
 #
 'script':'scripts/bilayer.py',
 'params':'parameters.py',
-'tags':['cgmd','bilayer','free'],
+'tags':['cgmd','bilayer','free','tested_2017.09.13'],
 'extensions':[
     '@extras/*.py',
     '@extras/geometry_tools/*.py',
@@ -56,7 +18,7 @@ ny: 2
 USAGE NOTES:|
     use this procedure to make a "free" bilayer
     this method packs lipids in vacuum with restraints
-    requires restrains generated via a run named "generate_lipidome_restraints"
+    you must run "make go lipidome" at least once per automacs before running
 
 step:               bilayer
 
@@ -95,7 +57,7 @@ force field:           martini-sources     # specify the name of the force field
 force field upright:   martini_upright     # force field with "upright" vacuum pack restraints
 
 #---EQUILIBRATION
-equilibration:      npt-bilayer
+equilibration:         npt-bilayer
 mdp specs:|{
     'group':'cgmd',
     'mdps':{
@@ -120,7 +82,7 @@ mdp specs:|{
 #
 'script':'scripts/bilayer-flat.py',
 'params':'parameters.py',
-'tags':['cgmd','bilayer','free','flat'],
+'tags':['cgmd','bilayer','free','flat','tested_2017.09.13'],
 'extensions':[
     '@extras/*.py',
     '@extras/geometry_tools/*.py',
@@ -130,7 +92,7 @@ mdp specs:|{
 USAGE NOTES:|
     use this procedure to make a "free" bilayer
     this method packs lipids in vacuum with restraints
-    requires restrains generated via a run named "generate_lipidome_restraints"
+    you must run "make go lipidome" at least once per automacs before running
     run the full test with multiply via: 
         make quick clear_lipidome_restraints && make prep generate_lipidome_restraints && make run && \
         make clean sure && make prep bilayer_control_flat_multiply && make metarun
@@ -175,11 +137,11 @@ force field:           martini-sources      # specify the name of the force fiel
 force field upright:   martini_upright      # force field with "upright" vacuum pack restraints
 force field flat:      martini_upright_alt  # force field with alternate lipids for remaining flat
 
-#---list of MDPs to use when running a flat bilayer
+#---after adding restraints we run dynamics with the following MDP files
 flat_restart_mdps: ['input-md-npt-bilayer-eq-in','input-md-in']
 
 #---EQUILIBRATION
-equilibration:      npt-bilayer
+equilibration:         npt-bilayer
 mdp specs:|{
     'group':'cgmd',
     'mdps':{
@@ -197,6 +159,66 @@ mdp specs:|{
 
 """},
 
+'bilayer_control_multiply':{
+#####
+####
+###
+##
+#
+'tags':['cgmd','tested_2017.09.13'],
+'metarun':[
+{'step':'bilayer','do':'bilayer_control_cgmd'},
+{'step':'large','do':'multiply','settings':"""
+step: large
+requires: multiply
+equilibration: npt-bilayer-short,npt-bilayer
+minimize: True
+proceed: True
+genconf gap: 0.3
+nx: 2
+ny: 2
+"""}]},
+
+'bilayer_control_flat_multiply':{
+#####
+####
+###
+##
+#
+'tags':['cgmd','tested_2017.09.13'],
+'metarun':[
+{'step':'bilayer','do':'bilayer_control_flat'},
+{'step':'large','do':'multiply','settings':"""
+step: large
+requires: multiply
+equilibration: npt-bilayer-short,npt-bilayer
+minimize: True
+proceed: True
+genconf gap: 0.3
+nx: 2
+ny: 2
+"""}]},
+
+'bilayer_release':{
+#####
+####
+###
+##
+#
+'script':'scripts/bilayer-release.py',
+'params':'parameters.py',
+'tags':['cgmd','bilayer','tested_2017.09.13'],
+'extensions':[
+    '@extras/*.py',
+    '@extras/geometry_tools/*.py',
+    'codes/*.py'],
+'settings':"""
+step: release
+USAGE NOTES:|
+    run "make go bilayer_release" to remove restraints 
+    must start with a metarun only that uses bilayer_control_flat
+"""},
+
 'bilayer_release_new_mdp':{
 #####
 ####
@@ -205,12 +227,15 @@ mdp specs:|{
 #
 'script':'scripts/bilayer-release.py',
 'params':'parameters.py',
-'tags':['cgmd','bilayer'],
+'tags':['cgmd','bilayer','tested_2017.09.13'],
 'extensions':[
     '@extras/*.py',
     '@extras/geometry_tools/*.py',
     'codes/*.py'],
 'settings':"""
+
+USAGE NOTES:|
+    similar to bilayer_release but uses alternate MDP files
 
 step: release
 force field: martini-sources
@@ -231,23 +256,6 @@ mdp specs:|{
         },
     }
     
-"""},
-
-'bilayer_release':{
-#####
-####
-###
-##
-#
-'script':'scripts/bilayer-release.py',
-'params':'parameters.py',
-'tags':['cgmd','bilayer'],
-'extensions':[
-    '@extras/*.py',
-    '@extras/geometry_tools/*.py',
-    'codes/*.py'],
-'settings':"""
-step: release
 """},
 
 }

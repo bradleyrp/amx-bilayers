@@ -8,7 +8,7 @@
 #
 'script':'scripts/bilayer.py',
 'params':'parameters-aamd.py',
-'tags':['aamd','bilayer','free'],
+'tags':['aamd','bilayer','free','tag_!?aamd'],
 'extensions':[
     '@extras/*.py',
     '@extras/geometry_tools/*.py',
@@ -86,7 +86,7 @@ mdp specs:|{
 #
 'script':'scripts/bilayer-careful.py',
 'params':'parameters-aamd.py',
-'tags':['aamd','bilayer','free'],
+'tags':['aamd','bilayer','free','tag_!?aamd'],
 'extensions':[
     '@extras/*.py',
     '@extras/geometry_tools/*.py',
@@ -175,7 +175,7 @@ mdp specs:|{
 ###
 ##
 #
-'tags':['cgmd','lipidome'],
+'tags':['aamd','tag_one','lipidome','tag_!?aamd'],
 'params':'@bilayers/parameters.py',
 'extensions':[
 	'@extras/geometry_tools/*.py'],

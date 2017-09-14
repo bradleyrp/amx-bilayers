@@ -6,6 +6,7 @@
 ###
 ##
 #
+'tags':['aamd','tag_!?aamd'],
 'metarun':[
 {'step':'protein','do':'bilayer_protein_topology_only','settings':"""
 
@@ -36,6 +37,7 @@ group origin: ['resid 150','resid 169']  # reference/pivot point for the protein
 ###
 ##
 #
+'tags':['aamd','tag_!?aamd'],
 'metarun':[
 {'step':'protein','do':'bilayer_protein_topology_only','settings':"""
 
@@ -67,6 +69,7 @@ cation: MG                               # we change the cation on the adhesion 
 ###
 ##
 #
+'tags':['aamd','tag_!?aamd'],
 'metarun':[
 {'step':'protein','do':'bilayer_protein_topology_only','settings':"""
 
@@ -115,7 +118,7 @@ mdp specs:|{
 #
 'script':'scripts/bilayer-protein.py',
 'params':'parameters-aamd.py',
-'tags':['aamd','bilayer','protein-bilayer'],
+'tags':['aamd','bilayer','protein-bilayer','tag_!?aamd'],
 'extensions':[
     '@extras/*.py',
     '@extras/geometry_tools/*.py',

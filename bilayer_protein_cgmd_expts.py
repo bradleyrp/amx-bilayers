@@ -8,7 +8,7 @@
 #
 'script':'scripts/bilayer-protein.py',
 'params':'parameters.py',
-'tags':['cgmd','bilayer','protein-bilayer'],
+'tags':['cgmd','bilayer','protein-bilayer','tag_support','tested_2017.09.14'],
 'extensions':[
     '@extras/*.py',
     '@extras/geometry_tools/*.py',
