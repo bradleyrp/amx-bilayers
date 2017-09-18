@@ -233,8 +233,6 @@ def adhere_protein_bilayer(gro,debug=False,**kwargs):
 				state.itp.append(os.path.basename(fn))
 	else: raise Exception('unclear scale: %s'%scale_method)
 
-
-
 	#---! only works for a single incoming protein type and corresponding ITP
 	collected_protein_itps = [GMXTopology(state.here+fn) for fn in state.itp]
 	molecules = dict([j for k in [i.molecules.items() for i in collected_protein_itps] for j in k])
