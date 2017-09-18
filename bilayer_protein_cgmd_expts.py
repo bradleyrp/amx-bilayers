@@ -16,6 +16,8 @@
 'settings':"""
 
 USAGE NOTES:|
+    this is a CORE automacs feature used by several metaruns
+    see also "bilayer_protein_adhesion_custom" for the standalone version
 	requires a pre-equilibrated, flat bilayer
     gets the protein details automatically from state.protein_prepared
     bilayer structure and force field are coded below, however you can override them in a metarun
