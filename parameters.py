@@ -6,12 +6,13 @@
 		'constrain':'none',
 		'restrain':'none',
 		'continue':'continue',
-		'integrate':'medium',
+		'integrate':'fast',
 		'output':'standard',
 		'temperature':'none',
 		'pressure':'standard',
 		'groups':'none',
 		'screening':'standard',
+		'virtual-sites':'off',
 		},
 	#---standard options
 	'potential':{
@@ -48,6 +49,7 @@
 		'standard':{'epsilon_r':15},
 		'off':{'epsilon_r':0},
 		},
+	'virtual-sites':{'standard':{'lincs-order':6},'off':{}},
 	'restrain':{
 		'posre':{'define':'-DPOSRES'},
 		#---"posre-com-only": keep position restraints off because we set them manually in the ITP
@@ -70,6 +72,13 @@
 			'integrator':'md',
 			'tinit':0.0,
 			'dt':0.02,
+			'nsteps':50000,
+			'nstcomm':100,
+			},
+		'fast':{
+			'integrator':'md',
+			'tinit':0.0,
+			'dt':0.04,
 			'nsteps':50000,
 			'nstcomm':100,
 			},
@@ -163,6 +172,13 @@
 			'tau_p':2.0,
 			'compressibility':'3e-4',
 			'ref_p':'1.0',
+			},
+		'npt-semiisotropic':{
+			'Pcoupl':'Berendsen',
+			'Pcoupltype':'semiisotropic',
+			'tau_p':5.0,
+			'compressibility':'3e-5 3e-5',
+			'ref_p':'1.0 1.0',
 			},
 		'npt-semiisotropic-weak':{
 			'Pcoupl':'Berendsen',
