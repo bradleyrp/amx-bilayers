@@ -68,9 +68,7 @@ mdp specs:|{
             {'pressure':'npt-semiisotropic-weak','dt':0.001,'nsteps':200000}],
         'input-md-npt-bilayer-eq-in.mdp':['npt-bilayer',
             {'restrain':'posre-com-only','pressure':'npt-semiisotropic-weak','dt':0.01}],
-        'input-md-in.mdp':[{'pressure':'npt-semiisotropic-weak'}],
-        },
-    }
+        'input-md-in.mdp':[{'pressure':'npt-semiisotropic-weak'}],},}
 
 """},
 
@@ -82,7 +80,7 @@ mdp specs:|{
 #
 'script':'scripts/bilayer-flat.py',
 'params':'parameters.py',
-'tags':['cgmd','bilayer','free','flat','tested_2017.09.13'],
+'tags':['cgmd','bilayer','free','flat','tested_2017.09.18'],
 'extensions':[
     '@extras/*.py',
     '@extras/geometry_tools/*.py',
@@ -122,7 +120,7 @@ sol:                W               # residue name for water
 atom resolution:    cgmd            # either cgmd or aamd
 water buffer:       8               # water-other gap distance in Angstroms (avoid waters in bilayer!)
 solvent:            martini-water   # water box (must be copied via files)
-thickness:          14              # thickness of the box at the solvate step
+thickness:          18              # thickness of the box at the solvate step (nm)
 
 #---COPY DEPENDENCIES
 files:    ['inputs/martini/library-general-structs/martini-water.gro']
@@ -153,9 +151,7 @@ mdp specs:|{
         'input-md-npt-bilayer-eq-in.mdp':['npt-bilayer',
             {'restrain':'posre-com-only','pressure':'npt-semiisotropic-weak','dt':0.01}],
         'input-md-in.mdp':[{'restrain':'posre-com-only','pressure':'npt-semiisotropic-weak',
-            'nsteps':500000}],
-        },
-    }
+            'nsteps':500000}],},}
 
 """},
 
@@ -216,7 +212,7 @@ ny: 2
 step: release
 USAGE NOTES:|
     run "make go bilayer_release" to remove restraints 
-    must start with a metarun only that uses bilayer_control_flat
+    must start with a metarun that uses bilayer_control_flat
 """},
 
 'bilayer_release_new_mdp':{
@@ -252,9 +248,7 @@ mdp specs:|{
         'input-md-npt-bilayer-eq-in.mdp':['npt-bilayer',
             {'restrain':'posre-com-only','pressure':'npt-semiisotropic-weak','dt':0.01,'nsteps':10000}],
         'input-md-in.mdp':[{'restrain':'posre-com-only','pressure':'npt-semiisotropic-weak',
-            'nsteps':100000}],
-        },
-    }
+            'nsteps':100000}],},}
     
 """},
 
