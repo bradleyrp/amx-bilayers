@@ -23,10 +23,8 @@ USAGE NOTES:|
     bilayer structure and force field are coded below, however you can override them in a metarun
     since you can override in a metarun, we have only one adhesion routine
 
-step: adhere
-
+step: adhere # name the step (folder)
 bilayer structure: inputs/previous/bilayer.gro # starting bilayer structure
-
 landscape metadata: @martini/auto_ff/landscape.json # colloquial types for different molecules
 
 #---COPY DEPENDENCIES
@@ -49,8 +47,7 @@ protein_lattice:|{
 	'lattice_type':'square',
 	'space_scale':20,
 	'total_proteins':1,
-	'protein_shift_up':3.0,
-	}
+	'protein_shift_up':3.0,}
 
 sol: W                         # !!! remove this to the landscape
 ionic strength: 0.150          # box is reionized after adding protein to ensure neutral
@@ -59,14 +56,16 @@ reionize method: ions          # select "ions" to replace only ions and "solvent
 cation: NA+                    # choose a new cation for adding back counterions
 anion: CL-                     # choose a new anion for adding back counterions
 
+#---EQUILIBRATION
+equilibration: ['npt-bilayer']
 mdp specs:|{
     'group':'cgmd',
     'mdps':{
         'input-em-steep-in.mdp':['minimize'],
+        'input-md-npt-bilayer-eq-in.mdp':[{'restrain':'posre-com-only','pressure':'npt-semiisotropic-weak',
+            'nsteps':500000,'groups':'protein','temperature':'protein','dt':0.01}],
         'input-md-in.mdp':[{'restrain':'posre-com-only','pressure':'npt-semiisotropic-weak',
-            'nsteps':500000,'groups':'protein','temperature':'protein'}],
-        },
-    }
+            'nsteps':500000,'groups':'protein','temperature':'protein'}],},}
 
 """},
 
