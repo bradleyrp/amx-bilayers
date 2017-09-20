@@ -213,6 +213,7 @@ step: release
 USAGE NOTES:|
     run "make go bilayer_release" to remove restraints 
     must start with a metarun that uses bilayer_control_flat
+    works correctly even if you have a protein
 """},
 
 'bilayer_release_new_mdp':{
@@ -239,7 +240,7 @@ sources: ['@martini/martini-sources.ff']
 bilayer structure: @structure-repo/bilayers-cgmd/stock-bilayer-v00.gro
 
 #---EQUILIBRATION
-equilibration: npt-bilayer-short,npt-bilayer
+equilibration: ['npt-bilayer-short','npt-bilayer']
 mdp specs:|{
     'group':'cgmd',
     'mdps':{
