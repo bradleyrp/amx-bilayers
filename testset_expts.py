@@ -205,7 +205,7 @@ protein_lattice:|{
 ###
 ##
 #
-'tags':['cgmd','tested_2017.09.14','tag_dev','tag_exo70','tag_needs_structure'],
+'tags':['cgmd','tested_2017.09.14','tag_dev','tag_exo70','tag_needs_extra_structures'],
 'metarun':[
 {'step':'protein','do':'martinize','settings':"""
 USAGE NOTES:|
