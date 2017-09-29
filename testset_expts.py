@@ -6,7 +6,7 @@
 ###
 ##
 #
-'tags':['cgmd','tag_structure_repo','tested_2017.09.15'],
+'tags':['cgmd','tested_2017.09.15','note_structure_repo'],
 'metarun':[
 
 #---step 1: coarse-grain the protein using MARTINI
@@ -133,79 +133,13 @@ mdp specs:|{
 
 """},
 
-'helix0_demo':{
-#####
-####
-###
-##
-#
-'tags':['cgmd','tag_structure_repo'],
-'metarun':[
-{'step':'bilayer','do':'bilayer_control_cgmd','settings':"""
-step: bilayer
-monolayer top: 90
-composition top: {'DOPC':0.64,'DOPS':0.16,'POP2':0.2}
-composition bottom: {'POPC':1.0}
-"""},
-{'step':'protein','do':'martinize','settings':"""
-start structure: @structure-repo/proteins/helix0.pdb
-"""},
-{'step':'adhere','do':'bilayer_protein_adhesion','settings':"""
-force field: martini-sources
-sources: ['@martini/martini-sources.ff']
-placement method: banana
-group up: resid 19
-group down: resid 7
-group origin: resid 7
-bilayer structure: s01-bilayer/md.part0001.gro
-protein_lattice:|{
-	'nrows':1,'ncols':1,
-	'lattice_type':'square',
-	'space_scale':20,
-	'total_proteins':1,
-	'protein_shift_up':1.0,
-	}
-"""}]},
-
-'helix0_flat_demo':{
-#####
-####
-###
-##
-#
-'tags':['cgmd','tag_structure_repo'],
-'metarun':[
-{'step':'bilayer','do':'bilayer_control_flat','settings':"""
-step: bilayer
-monolayer top: 90
-composition top: {'DOPC':0.64,'DOPS':0.16,'POP2':0.2}
-composition bottom: {'POPC':1.0}
-"""},
-{'step':'protein','do':'martinize','settings':"""
-start structure: @structure-repo/proteins/helix0.pdb
-"""},
-{'step':'adhere','do':'bilayer_protein_adhesion','settings':"""
-placement method: banana
-group up: resid 19
-group down: resid 7
-group origin: resid 7
-bilayer structure: s01-bilayer/md.part0001.gro
-protein_lattice:|{
-	'nrows':1,'ncols':1,
-	'lattice_type':'square',
-	'space_scale':20,
-	'total_proteins':1,
-	'protein_shift_up':1.0,
-	}
-"""}]},
-
 'banana_demo':{
 #####
 ####
 ###
 ##
 #
-'tags':['cgmd','tested_2017.09.14','tag_dev','tag_exo70','tag_needs_extra_structures'],
+'tags':['cgmd','tested_2017.09.14','tag_extra_reqs','tag_exo70'],
 'metarun':[
 {'step':'protein','do':'martinize','settings':"""
 USAGE NOTES:|
@@ -253,7 +187,7 @@ two protein hack: True
 ###
 ##
 #
-'tags':['cgmd'],
+'tags':['cgmd','dev'],
 'metarun':[
 {'step':'bilayer','do':'bilayer_control_flat','settings':"""
 
