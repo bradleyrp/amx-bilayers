@@ -216,7 +216,7 @@ USAGE NOTES:|
     works correctly even if you have a protein
 """},
 
-'bilayer_release_new_mdp':{
+'bilayer_release_change':{
 #####
 ####
 ###
@@ -233,6 +233,7 @@ USAGE NOTES:|
 
 USAGE NOTES:|
     similar to bilayer_release but uses alternate MDP files
+    !! debugging note. one-line multilines cause major errors
 
 step: release
 force field: martini-sources

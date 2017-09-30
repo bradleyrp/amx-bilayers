@@ -484,6 +484,17 @@ def bilayer_flatten_for_restraints(structure,gro):
 			struct.points[subjects,2] = mean_z
 	struct.write(state.here+gro+'.gro')
 
+def look_backwards(key,condition=lambda x:True,first=True):
+	"""
+	Prototype for a function to get stuff from previous states.
+	"""
+	collect = {}
+	for bnum,before in enumerate(state.before):
+		if key in before and condition(before[key]): 
+			collect[bnum] = before[key]
+	if first: return collect[sorted(collect)[0]]
+	else: return collect
+
 def release_restraints():
 	"""
 	Custom method for removing restraints.
@@ -501,7 +512,10 @@ def release_restraints():
 	#---! it might be worth standardizing this step
 	#---! need a systematic way to track groups
 	for itp in (state.itp or [])+['system-groups.ndx']:
-		shutil.copyfile(state.before[-1]['here']+itp,state.here+itp)
+		#---search backwards in case this was generated earlier
+		#---! note this could be more systematic and less clumsy. need a "look_backwards"
+		there = look_backwards('here',condition=lambda x,itp=itp:os.path.isfile(os.path.join(x,itp)))
+		shutil.copyfile(os.path.join(there,itp),state.here+itp)
 	#---get the last frame
 	get_last_frame(gro='system-restrained')
 	struct = GMXStructure(state.here+'system-restrained.gro')

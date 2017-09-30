@@ -23,6 +23,21 @@ def place_protein():
 	if state.placement_method == 'globular_up_down': place_protein_globular_up_down()
 	elif state.placement_method == 'banana': place_protein_banana()
 	else: raise Exception('undeveloped placement method: %s'%state.placement_method)
+	"""
+	intervene here to discard reference positions if they are available
+	there are two ways to add a protein to a flat bilayer:
+		1. generate a flat bilayer, then use it as a starting structure
+		2. generate a flat bilayer and continue with adhesion
+	case 2 above leaves a rule in state.gmx_call_rules that points to the perfectly flat bilayer
+	this throws errors when we add the protein so we can just discard the rule
+	as long as the lipids have not deformed too much
+	this trick turns case 2 into the equivalent of case 1
+	"""
+	if state.gmx_call_rules:
+		ref_coord_rules = [ii for ii,i in enumerate(state.gmx_call_rules) if i.get('flag',None)=='r']
+		if any(ref_coord_rules):
+			state.gmx_call_rules = [i for ii,i in enumerate(state.gmx_call_rules) 
+				if ii not in ref_coord_rules]
 
 def place_protein_globular_up_down():
 	"""
@@ -90,7 +105,10 @@ def place_protein_banana():
 	ref_axis['xyz'.index(direction)] = 1
 	down_axis['xyz'.index(direction_down)] = -1
 	#---get the protein structure from a dedicated variable
-	if not state.protein_prepared: raise Exception('this step requires state.protein_prepared')
+	if not state.protein_prepared: 
+		#---! testing has nonlinear execution
+		try: state.protein_prepared = state.before[-1]['protein_prepared']
+		except: raise Exception('this step requires state.protein_prepared')
 	protein_fn = state.protein_prepared['gro']
 	#---lay the protein flat along the direction
 	protein = GMXStructure(protein_fn)
@@ -159,7 +177,11 @@ def adhere_protein_bilayer(gro,debug=False,**kwargs):
 			scan += 2
 	else: raise Exception('unclear lattice type: %s'%lattice_type)
 	grid_space = np.array([(horz*i+j%2.0*offset,vert*j) for i,j in np.array(grid).astype(float)])
-	focii = np.concatenate((grid_space.T,[np.zeros(total_proteins)])).T
+	try: 
+		focii = np.concatenate((grid_space.T,[np.zeros(total_proteins)])).T
+	except: 
+		import ipdb;ipdb.set_trace()
+		raise Exception('incorrect number of proteins')
 
 	#---load the bilayer and protein structures
 	bilayer = GMXStructure(state.bilayer_structure)
