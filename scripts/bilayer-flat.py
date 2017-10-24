@@ -57,7 +57,7 @@ bilayer_flatten_for_restraints(
 	structure='system-leaflets',
 	gro='system-leaflets-flat')
 register_file('system-leaflets-flat.gro')
-register_gmx_call(
+gmx_register_call(
 	command='grompp',flag='r',
 	value='system-leaflets-flat.gro')
 for rnum,mdp in enumerate(state.flat_restart_mdps):

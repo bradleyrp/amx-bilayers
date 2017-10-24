@@ -527,3 +527,15 @@ def release_restraints():
 	struct.write(state.here+'system.gro')
 	#---update the force field according to the settings
 	state.force_field = state.q('force_field')
+
+def martini_lipidome_check():
+	"""
+	Ensure that the MARTINI lipidome is ready otherwise give the user more clear instructions.
+	"""
+	for dn in settings.get('sources',[]):
+		if not os.path.isdir(dn):
+			raise Exception('failed to find %s during the martini_lipidome_check. '%dn+
+				'it is likely that you need to run `make go lipidome clean` (beware that this erases data) once '
+				'before continuing in order to generate the starting structures for MARTINI lipid simulation. '
+				'you only need to run this once even if you try and re-try different experiments, because it adds '
+				'the structures to inputs')

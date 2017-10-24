@@ -8,7 +8,7 @@
 #
 'script':'scripts/bilayer.py',
 'params':'parameters.py',
-'tags':['cgmd','bilayer','free','tested_2017.09.13'],
+'tags':['cgmd','bilayer','free','tested_2017.09.13','tested_2017.10.18_dev'],
 'extensions':[
     '@extras/*.py',
     '@extras/geometry_tools/*.py',
@@ -48,13 +48,14 @@ solvent:            martini-water   # water box (must be copied via files)
 thickness:          14              # thickness of the box at the solvate step
 
 #---COPY DEPENDENCIES
-files:              ['inputs/martini/library-general-structs/martini-water.gro']
-sources:            ['inputs/martini/martini-sources.ff','inputs/martini/auto_ff/martini_upright.ff']
+files:              ['@martini/library-general-structs/martini-water.gro']
+sources:            ['@martini/martini-sources.ff','inputs/martini/auto_ff/martini_upright.ff']
+make step hook:     martini_lipidome_check  # make sure the lipidome is ready
 
 #---FORCE FIELD
-force field:           martini-sources     # specify the name of the force field (minus ".ff" suffix)
-                                           # note non-standard force fields must be copied via "sources"
-force field upright:   martini_upright     # force field with "upright" vacuum pack restraints
+force field:           martini-sources         # specify the name of the force field (minus ".ff" suffix)
+                                               # note non-standard force fields must be copied via "sources"
+force field upright:   martini_upright         # force field with "upright" vacuum pack restraints
 
 #---EQUILIBRATION
 equilibration:         npt-bilayer
@@ -161,7 +162,8 @@ mdp specs:|{
 ###
 ##
 #
-'tags':['cgmd','tested_2017.09.13'],
+'tags':['cgmd','tested_2017.09.13','tested_2017.10.18_dev'],
+#---duration is 10.0min on dark
 'metarun':[
 {'step':'bilayer','do':'bilayer_control_cgmd'},
 {'step':'large','do':'multiply','settings':"""
@@ -181,7 +183,8 @@ ny: 2
 ###
 ##
 #
-'tags':['cgmd','tested_2017.09.13'],
+#---duration is ~30min on dark
+'tags':['cgmd','tested_2017.09.13','tested_2017.10.17_dev'],
 'metarun':[
 {'step':'bilayer','do':'bilayer_control_flat'},
 {'step':'large','do':'multiply','settings':"""
