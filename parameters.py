@@ -196,6 +196,31 @@
 			},
 		'nvt':{'Pcoupl':'no'}
 		},
+	#---protein-in-water settings
+	'nvt-protein':{
+		'pressure':'nvt',
+		'continue':'continue',
+		'integrate':'npt-bilayer',		
+		'output':'npt-bilayer',
+		'groups':'protein-water',
+		'temperature':'protein-water',
+		},
+	'npt-protein':{
+		'pressure':'npt-isotropic-weak',
+		'continue':'continue',
+		'integrate':'npt-bilayer',		
+		'output':'npt-bilayer',
+		'groups':'protein-water',
+		'temperature':'protein-water',
+		},
+	'npt-protein-production':{
+		'pressure':'standard-isotropic',
+		'continue':'continue',
+		'integrate':'npt-bilayer',		
+		'output':'npt-bilayer',
+		'groups':'protein-water',
+		'temperature':'protein-water',
+		},
 	#---override for NPT bilayer and solvent
 	'npt-bilayer':{
 		'continue':'continue',
