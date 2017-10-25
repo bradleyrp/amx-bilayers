@@ -8,7 +8,7 @@
 #
 'script':'scripts/bilayer.py',
 'params':'parameters-aamd.py',
-'tags':['aamd','tested_2017.10.20.1000_dev','tag_structure_repo'],
+'tags':['aamd','tested_2017.10.20.1000_dev','note_structure_repo'],
 #---duration is 66.4 minutes on dark (a large vacuum gap disappears)
 'extensions':[
     '@extras/*.py',
@@ -87,7 +87,7 @@ mdp specs:|{
 #
 'script':'scripts/bilayer-careful.py',
 'params':'parameters-aamd.py',
-'tags':['aamd','tag_TEST?'],
+'tags':['aamd','test'],
 'extensions':[
     '@extras/*.py',
     '@extras/geometry_tools/*.py',
@@ -176,7 +176,7 @@ mdp specs:|{
 ###
 ##
 #
-'tags':['aamd','tag_prep','tested_2017.10.20.1000_dev'],
+'tags':['aamd','tag_prelim','tested_2017.10.20.1000_dev'],
 'params':'@bilayers/parameters.py',
 'extensions':[
 	'@extras/geometry_tools/*.py'],

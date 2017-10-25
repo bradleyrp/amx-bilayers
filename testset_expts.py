@@ -139,7 +139,7 @@ mdp specs:|{
 ###
 ##
 #
-'tags':['cgmd','tested_2017.09.14','tag_extra_reqs','tag_exo70'],
+'tags':['cgmd','tested_2017.09.14','dev','note_EXTRA_REQS','note_exo70'],
 'metarun':[
 {'step':'protein','do':'martinize','settings':"""
 USAGE NOTES:|
