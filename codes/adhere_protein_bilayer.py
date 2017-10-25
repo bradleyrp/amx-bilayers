@@ -47,7 +47,11 @@ def place_protein_globular_up_down():
 	reference_axis = state.q('reference_axis',[0,0,1])
 
 	#---get the protein structure from a dedicated variable
-	if not state.protein_prepared: raise Exception('this step requires state.protein_prepared')
+	if not state.protein_prepared:
+		#---! testing has nonlinear execution
+		try: state.protein_prepared = state.before[-1]['protein_prepared']
+		except: raise Exception('this step requires state.protein_prepared')
+
 	protein_fn = state.protein_prepared['gro']
 	protein = GMXStructure(protein_fn)
 	
