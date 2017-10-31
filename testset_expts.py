@@ -194,6 +194,7 @@ two protein hack: True
 USAGE NOTES:|
     under development
         currently experiencing stability problems at npt-bilayer
+        increased from 196 to 625
 
 monolayer top:      196
 monolayer bottom:   196
@@ -211,14 +212,17 @@ mdp specs:|{
         'input-md-vacuum-pack1-eq-in.mdp':['vacuum-packing',{'ref_p':'500 1','nsteps':100000}],
         'input-md-vacuum-pack2-eq-in.mdp':['vacuum-packing',{'nsteps':200000}],
         'input-md-npt-bilayer-short1-eq-in.mdp':['npt-bilayer',{
-        	'virtual-sites':'standard','pressure':'npt-semiisotropic','dt':0.001,'nsteps':100000}],
+            'restrain':'posre-com-only','virtual-sites':'standard','pressure':'npt-semiisotropic',
+            'dt':0.001,'nsteps':100000}],
         'input-md-npt-bilayer-short2-eq-in.mdp':['npt-bilayer',{
-        	'virtual-sites':'standard','pressure':'npt-semiisotropic','dt':0.005,'nsteps':100000}],
+            'restrain':'posre-com-only','virtual-sites':'standard','pressure':'npt-semiisotropic',
+            'dt':0.005,'nsteps':100000}],
         'input-md-npt-bilayer-eq-in.mdp':['npt-bilayer',{
-        	'virtual-sites':'standard','pressure':'npt-semiisotropic','dt':0.01}],
-        'input-md-in.mdp':[{'virtual-sites':'standard','pressure':'npt-semiisotropic-weak','nsteps':500000}],
-        },
-    }
+            'restrain':'posre-com-only','virtual-sites':'standard','pressure':'npt-semiisotropic',
+            'dt':0.01}],
+        'input-md-in.mdp':[{
+            'virtual-sites':'standard','restrain':'posre-com-only','pressure':'npt-semiisotropic-weak',
+            'nsteps':500000}],},}
 
 """},
 {'step':'large','do':'multiply','settings':"""
