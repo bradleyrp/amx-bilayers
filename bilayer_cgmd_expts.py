@@ -163,6 +163,7 @@ mdp specs:|{
 ##
 #
 'tags':['cgmd','tested_2017.09.13','tested_2017.10.18_dev'],
+'prelude':'make go lipidome clean && make clean sure',
 #---duration is 10.0min on dark
 'metarun':[
 {'step':'bilayer','do':'bilayer_control_cgmd'},
