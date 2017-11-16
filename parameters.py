@@ -13,6 +13,7 @@
 		'groups':'none',
 		'screening':'standard',
 		'virtual-sites':'off',
+		'flexible':'none',
 		},
 	#---standard options
 	'potential':{
@@ -56,12 +57,17 @@
 		#---...and we also turn on refcoord-scaling to avoid gromacs warnings with pressure coupling
 		'posre-com-only':{'refcoord-scaling':'com'},
 		'none':{},
-		},			
+		},
 	'constrain':{
 		'none':{
 			'constraints':'none',
 			'constraint_algorithm':'Lincs',
 			},
+		},
+	'flexible':{
+		'none':{},
+		#---! HACKED FOR MULTIMER
+		'flexible':{'define':'-DFLEXIBLE -DNO_RUBBER_BANDS','lincs-warnangle':'90'},
 		},
 	'continue':{
 		'continue':{'continuation':'yes','gen_vel':'no','gen_seed':123123,},
@@ -72,6 +78,13 @@
 			'integrator':'md',
 			'tinit':0.0,
 			'dt':0.02,
+			'nsteps':50000,
+			'nstcomm':100,
+			},
+		'fast':{
+			'integrator':'md',
+			'tinit':0.0,
+			'dt':0.04,
 			'nsteps':50000,
 			'nstcomm':100,
 			},
