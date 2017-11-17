@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 
 import os,shutil,glob,re
-import numpy as np
 from runner import DotDict
 from copy import deepcopy
-import scipy
+try:
+	#---! automacs tries to load this even for e.g. make upload
+	import numpy as np
+	import scipy
+except: pass
 
 _not_reported = ['lay_coords_flat','make_list']
 _not_all = ['deepcopy']
@@ -258,43 +261,55 @@ def adhere_protein_bilayer(gro,debug=False,**kwargs):
 				shutil.copyfile(fn,state.here+os.path.basename(fn))
 				state.itp.append(os.path.basename(fn))
 	else: raise Exception('unclear scale: %s'%scale_method)
+	#---! addition for multimer
+	if state.protein_prepared and 'itps' in state.protein_prepared:
+		for fn in state.protein_prepared['itps']:
+			shutil.copyfile(fn,state.here+os.path.basename(fn))
 
-	#---! only works for a single incoming protein type and corresponding ITP
-	collected_protein_itps = [GMXTopology(state.here+fn) for fn in state.itp]
-	molecules = dict([j for k in [i.molecules.items() for i in collected_protein_itps] for j in k])
-	if not state.q('two_protein_hack',False):
-		"""
-		in martini we typically have the lipids in the ff and a single incoming protein.itp
-		however in aamd we may have lipid itp files as well. the construction procedure always places proteins
-		first, so in the event that we have multiple ITP files in state.itp we fish out the protein one and place
-		it first in line in the composition and then just hope for the best
-		"""
-		if len(molecules)>1:
-			molecule_names_protein = [i for i in molecules.keys() if re.search('(P|p)rotein',i)]
-			if len(molecule_names_protein)!=1: 
-				raise Exception('we need to fish out only a single protein from the molecule list but we got: %s'%
-					molecule_names_protein)
-			protein_molecule_name = molecule_names_protein[0]
-		else: protein_molecule_name = list(molecules.keys())[0]
-		state.composition = [[protein_molecule_name,total_proteins]] + state.composition
-		land = Landscape()
+	#---careful topology handling starts here
+	if settings.get('adhere_bookkeeping_mode',None) == 2:
+		#---explicit protein composition from protein_prepared
+		state.composition = state.protein_prepared['protein_composition'] + state.composition
 		state.lipids = [i for i in list(zip(*state.composition))[0] if i in Landscape().lipids()]
+	#---! legacy modes. note that it would be nice to make the newer modes into defaults and 
+	#---! ... expunge the old ones by giving the legacy experiments their own codes
 	else:
-		#---from PT a slightly more elegant hack
-		molecule_names_protein = [i for i in molecules.keys() if re.search('(P|p)rotein',i)]
-		#if len(molecules)>1:
-		#	molecule_names_protein = [i for i in molecules.keys() if re.search('(P|p)rotein',i)]
-		#	if len(molecule_names_protein)!=1: 
-		#		raise Exception('we need to fish out only a single protein from the molecule list but we got: %s'%
-		#			molecule_names_protein)
-		#	protein_molecule_name = molecule_names_protein[0]
-		#else: protein_molecule_name = list(molecules.keys())[0]
-		protein_molecule_name = molecule_names_protein[0]
-		#---rpb sets total_proteins below to get the PT hack to work
-		total_proteins = 2
-		state.composition = [[protein_molecule_name,total_proteins]] + state.composition
-		land = Landscape()
-		state.lipids = [i for i in list(zip(*state.composition))[0] if i in Landscape().lipids()]
+		#---! only works for a single incoming protein type and corresponding ITP
+		collected_protein_itps = [GMXTopology(state.here+fn) for fn in state.itp]
+		molecules = dict([j for k in [i.molecules.items() for i in collected_protein_itps] for j in k])
+		if not state.q('two_protein_hack',False):
+			"""
+			in martini we typically have the lipids in the ff and a single incoming protein.itp
+			however in aamd we may have lipid itp files as well. the construction procedure always places proteins
+			first, so in the event that we have multiple ITP files in state.itp we fish out the protein one and place
+			it first in line in the composition and then just hope for the best
+			"""
+			if len(molecules)>1:
+				molecule_names_protein = [i for i in molecules.keys() if re.search('(P|p)rotein',i)]
+				if len(molecule_names_protein)!=1: 
+					raise Exception('we need to fish out only a single protein from the molecule list but we got: %s'%
+						molecule_names_protein)
+				protein_molecule_name = molecule_names_protein[0]
+			else: protein_molecule_name = list(molecules.keys())[0]
+			state.composition = [[protein_molecule_name,total_proteins]] + state.composition
+			land = Landscape()
+			state.lipids = [i for i in list(zip(*state.composition))[0] if i in Landscape().lipids()]
+		else:
+			#---from PT a slightly more elegant hack
+			molecule_names_protein = [i for i in molecules.keys() if re.search('(P|p)rotein',i)]
+			#if len(molecules)>1:
+			#	molecule_names_protein = [i for i in molecules.keys() if re.search('(P|p)rotein',i)]
+			#	if len(molecule_names_protein)!=1: 
+			#		raise Exception('we need to fish out only a single protein from the molecule list but we got: %s'%
+			#			molecule_names_protein)
+			#	protein_molecule_name = molecule_names_protein[0]
+			#else: protein_molecule_name = list(molecules.keys())[0]
+			protein_molecule_name = molecule_names_protein[0]
+			#---rpb sets total_proteins below to get the PT hack to work
+			total_proteins = 2
+			state.composition = [[protein_molecule_name,total_proteins]] + state.composition
+			land = Landscape()
+			state.lipids = [i for i in list(zip(*state.composition))[0] if i in Landscape().lipids()]
 
 def recenter_protein_bilayer(structure,gro):
 	"""
@@ -378,3 +393,16 @@ def remove_ions(structure,gro):
 	#---remove ions from the composition by the molecule name returned as a key in Landscape.objects
 	for i in land.my(struct,'anions')+land.my(struct,'cations'): 
 		if i in list(zip(*state.composition))[0]: component(i,count=0)
+
+def switch_itp():
+	"""
+	!!!
+	"""
+	#---collect ITPs from the previous step
+	#---! we assume they were made in the previous step but this should be made flexible
+	#---! in general it would be good to make a more formal method for ITP changes
+	if state.martinize_itps_equilibrate:
+		for fn in state.martinize_itps_equilibrate: 
+			shutil.copyfile(os.path.join(state.steps[-2],fn),os.path.join(state.here,fn))
+		state.itp = state.martinize_itps_equilibrate
+	else: raise Exception('needs martinize_itps_equilibrate')

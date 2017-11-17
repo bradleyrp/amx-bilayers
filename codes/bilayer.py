@@ -213,12 +213,14 @@ def lipid_upright():
 	These position restraints ensure an upright lipid in a vacuum-packed bilayer.
 	"""
 	#---select the ITP file containing all lipids
-	if not state.lipids_itp: raise Exception('to add upright lipid contraints, we need a lipids_itp to rewrite')
+	if not state.lipids_itp: 
+		raise Exception('to add upright lipid contraints, we need a lipids_itp to rewrite')
 	itps = GMXTopology(os.path.join(state.here,state.force_field+'.ff',state.lipids_itp))
 	import ipdb;ipdb.set_trace()
 	sys.exit(1)
 
-def distinguish_leaflets(structure='incoming',gro='outgoing',samename=False,indices='dat-monolayer-indices.py'):
+def distinguish_leaflets(structure='incoming',gro='outgoing',
+	samename=False,indices='dat-monolayer-indices.py'):
 	"""
 	Take a gro file and some knowledge about leaflets and distinguish them.
 	"""
@@ -489,7 +491,8 @@ def look_backwards(key,condition=lambda x:True,first=True):
 	Prototype for a function to get stuff from previous states.
 	"""
 	collect = {}
-	for bnum,before in enumerate(state.before):
+	#---walk backwards
+	for bnum,before in list(enumerate(state.before))[::-1]:
 		if key in before and condition(before[key]): 
 			collect[bnum] = before[key]
 	if first: return collect[sorted(collect)[0]]

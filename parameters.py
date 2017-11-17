@@ -13,7 +13,7 @@
 		'groups':'none',
 		'screening':'standard',
 		'virtual-sites':'off',
-		'flexible':'none',
+		#'flexible':'none',
 		},
 	#---standard options
 	'potential':{
@@ -31,7 +31,7 @@
 			'rvdw':1.2,
 			'DispCorr':'No',
 			},
-		'verlet':{
+		'verlet_original':{
 			'cutoff-scheme':'verlet',
 			'nstlist':10,
 			'ns_type':'grid',
@@ -42,6 +42,21 @@
 			'vdw_type':'cut-off',
 			'vdw-modifier':'Potential-shift-verlet',
 			'rvdw':1.2,
+			'DispCorr':'No',
+			'verlet-buffer-tolerance':0.005,
+			},
+		'verlet':{
+			'cutoff-scheme':'verlet',
+			'nstlist':20,
+			'ns_type':'grid',
+			'pbc':'xyz',
+			'coulombtype':'reaction-field',
+			'epsilon_rf':0,
+			'coulomb-modifier':'Potential-shift-verlet',
+			'rcoulomb':1.1,
+			'vdw_type':'cut-off',
+			'vdw-modifier':'Potential-shift-verlet',
+			'rvdw':1.1,
 			'DispCorr':'No',
 			'verlet-buffer-tolerance':0.005,
 			},
@@ -81,10 +96,11 @@
 			'nsteps':50000,
 			'nstcomm':100,
 			},
-		'fast':{
+		'standard':{
 			'integrator':'md',
 			'tinit':0.0,
-			'dt':0.04,
+			# martini_v2.x_new-rf.mdp
+			'dt':0.03,
 			'nsteps':50000,
 			'nstcomm':100,
 			},
@@ -124,7 +140,7 @@
 			'nstvout':-1,
 			'nstfout':0,
 			'nstlog':1000,
-			'nstenergy':200,
+			'nstenergy':100,
 			'nstxtcout':2000,
 			'xtc_precision':100,
 			},
