@@ -160,6 +160,8 @@ def adhere_protein_bilayer(gro,debug=False,**kwargs):
 	HEAVILY MODIFIED FROM ORIGINAL AUTOMACS.
 	Removed debugging, pocket lipids, etc.
 	"""
+	#---! semi-temporary hack for uniform drop heights on bilayer
+	do_uniform = state.q('uniform_protein_adhesion_heights',False)
 	#---INPUTS
 	lattice = DotDict(**state.protein_lattice)
 	ncols,nrows = lattice.ncols,lattice.nrows
@@ -173,7 +175,9 @@ def adhere_protein_bilayer(gro,debug=False,**kwargs):
 	if lattice_type == 'square': 
 		vert = horz = space_scale
 		offset = 0
-		while len(grid)>total_proteins: grid.remove(-1)
+		while len(grid)>total_proteins: 
+			try: grid.remove(-1)
+			except: raise Exception('too few total proteins')
 	elif lattice_type == 'triangle': 
 		horz,vert = space_scale,space_scale*sqrt(2.0)/2
 		offset = space_scale/2.
@@ -202,6 +206,7 @@ def adhere_protein_bilayer(gro,debug=False,**kwargs):
 	center_shift = np.array([j/2. for j in bilayer.box[:2]]+
 		[z_shift])-np.concatenate((np.mean(grid_space,axis=0),[0]))
 
+	drop_spots = []
 	#---loop over protein placement positions
 	for translate in grid_space[::-1]:
 		#---we only shift in XY
@@ -220,6 +225,13 @@ def adhere_protein_bilayer(gro,debug=False,**kwargs):
 		#---...but probably not a good candidate for which lipid to remove when we do replacements later
 		pivot = np.array(drop_spot)
 		pivot[2] = bilayer.points[np.where(bilayer.residue_indices==closest_resnum)[0]][:,2].max()
+		drop_spots.append(pivot)
+	#---drop to the same height. a minor hack due to a problem where one protein was off each time
+	if do_uniform: 
+		drop_spots = np.array(drop_spots)
+		drop_spots[:,2] = drop_spots[:,2].mean()
+	#---separate loop to drop the proteins in case we fix them above
+	for pivot,translate in zip(drop_spots,grid_space[::-1]):
 		#---when using the simple distance finder we apply the shift here
 		relative_origin = np.concatenate((translate,[0])) + pivot + np.array([0,0,z_shift])
 		protein_copy.points = protein.points + relative_origin
@@ -405,4 +417,5 @@ def switch_itp():
 		for fn in state.martinize_itps_equilibrate: 
 			shutil.copyfile(os.path.join(state.steps[-2],fn),os.path.join(state.here,fn))
 		state.itp = state.martinize_itps_equilibrate
-	else: raise Exception('needs martinize_itps_equilibrate')
+	#---! this is only required for some use-cases
+	else: pass#raise Exception('needs martinize_itps_equilibrate')
