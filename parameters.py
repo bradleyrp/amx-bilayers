@@ -289,6 +289,7 @@
 		},		
 	#---override for vacuum packing steps			
 	'vacuum-packing':{
+		'potential':'verlet_original',
 		'groups':'blank',
 		'restrain':'posre',
 		'screening':'off',
