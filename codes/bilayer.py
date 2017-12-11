@@ -503,7 +503,7 @@ def release_restraints():
 	Custom method for removing restraints.
 	"""
 	#---replace restrained lipid names with the correct topology
-	lipid_regex = '^([A-Z]{4})R$'
+	lipid_regex = '^([A-Z0-9]{4})R$'
 	renames = []
 	for key in state.lipids:
 		if re.match(lipid_regex,key):
@@ -520,7 +520,7 @@ def release_restraints():
 		there = look_backwards('here',condition=lambda x,itp=itp:os.path.isfile(os.path.join(x,itp)))
 		shutil.copyfile(os.path.join(there,itp),state.here+itp)
 	#---get the last frame
-	get_last_frame(gro='system-restrained')
+	gmx_get_last_frame(gro='system-restrained')
 	struct = GMXStructure(state.here+'system-restrained.gro')
 	for old,new in renames: 
 		#---rename residues
