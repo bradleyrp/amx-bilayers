@@ -406,9 +406,10 @@ def remove_ions(structure,gro):
 	for i in land.my(struct,'anions')+land.my(struct,'cations'): 
 		if i in list(zip(*state.composition))[0]: component(i,count=0)
 
-def switch_itp():
+def topology_management():
 	"""
-	!!!
+	Handle various kinds of topology and force field changes.
+	!!! formerly called switch_itp which needs to be changed in the multimer procedures under development
 	"""
 	#---collect ITPs from the previous step
 	#---! we assume they were made in the previous step but this should be made flexible
@@ -417,5 +418,9 @@ def switch_itp():
 		for fn in state.martinize_itps_equilibrate: 
 			shutil.copyfile(os.path.join(state.steps[-2],fn),os.path.join(state.here,fn))
 		state.itp = state.martinize_itps_equilibrate
-	#---! this is only required for some use-cases
-	else: pass#raise Exception('needs martinize_itps_equilibrate')
+	#---check for a force field name change
+	ff_changer = state.q('force_field_name_change',{})
+	if ff_changer:
+		if ff_changer.get('when',None)=='topology_management':
+			if ff_changer.get('origin',None)==state.force_field:
+				state.force_field = ff_changer['destination']
