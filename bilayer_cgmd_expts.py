@@ -172,6 +172,7 @@ mdp specs:|{
 step: large
 requires: multiply
 equilibration: npt-bilayer-short,npt-bilayer
+maxwarn: 1
 minimize: True
 proceed: True
 genconf gap: 0.3
