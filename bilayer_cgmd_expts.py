@@ -59,6 +59,7 @@ force field upright:   martini_upright         # force field with "upright" vacu
 
 #---EQUILIBRATION
 equilibration:         npt-bilayer
+maxwarn:               1
 mdp specs:|{
     'group':'cgmd',
     'mdps':{
