@@ -205,14 +205,14 @@
 		'npt-semiisotropic':{
 			'Pcoupl':'Berendsen',
 			'Pcoupltype':'semiisotropic',
-			'tau_p':5.0,
+			'tau_p':10.0,
 			'compressibility':'3e-5 3e-5',
 			'ref_p':'1.0 1.0',
 			},
 		'npt-semiisotropic-weak':{
 			'Pcoupl':'Berendsen',
 			'Pcoupltype':'semiisotropic',
-			'tau_p':5.0,
+			'tau_p':10.0,
 			'compressibility':'3e-4 3e-4',
 			'ref_p':'1.0 1.0',
 			},
