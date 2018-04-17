@@ -22,7 +22,7 @@ restuff(
 	ndx=get_last('ndx'))
 solvate(
 	structure='solvate-dry',
-	gro='solvate-dense')
+	gro='solvate')
 write_top('solvate.top')
 minimize('solvate')
 remove_jump(
