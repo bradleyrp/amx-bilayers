@@ -205,25 +205,24 @@ def adhere_protein_bilayer(gro,debug=False,**kwargs):
 	#---center the lattice in the middle of the XY plane of the box (z_shift is made redundant below)
 	center_shift = np.array([j/2. for j in bilayer.box[:2]]+
 		[z_shift])-np.concatenate((np.mean(grid_space,axis=0),[0]))
-
 	drop_spots = []
 	#---loop over protein placement positions
 	for translate in grid_space[::-1]:
-		#---we only shift in XY
-		np.concatenate((translate,[0]))
 		#---use a simple distance finder to determine the z-offset for the desired location in the XY
 		drop_spot = np.concatenate((translate,[0])) + center_shift
 		#---to avoid the problem of distinguishing monolayers we assume a flat bilayer and drop from box top
 		drop_spot[2] = bilayer.box[2]
 		lipid_indices = bilayer.select('lipid')
 		#---perform search in XYZ but if the bilayer is flat it is as if we searched in XY
+		#---! possible issue: restrained lipids do not appear on the list of selected lipids
 		closest = scipy.spatial.KDTree(bilayer.points[lipid_indices]).query(drop_spot)[1]
 		#---find the nearest lipid residue number
-		closest_resnum = bilayer.residue_indices[closest]
+		closest_resnum = bilayer.residue_indices[lipid_indices][closest]
 		#---pivot is the height of the top atom for the nearest lipid at the drop_spot in XY
 		#---...which is a good minimal definition for the nearest part of the surface
 		#---...but probably not a good candidate for which lipid to remove when we do replacements later
 		pivot = np.array(drop_spot)
+		#---! the following assumes that the residue indices are correct/unique
 		pivot[2] = bilayer.points[np.where(bilayer.residue_indices==closest_resnum)[0]][:,2].max()
 		drop_spots.append(pivot)
 	#---drop to the same height. a minor hack due to a problem where one protein was off each time
@@ -236,7 +235,6 @@ def adhere_protein_bilayer(gro,debug=False,**kwargs):
 		relative_origin = np.concatenate((translate,[0])) + pivot + np.array([0,0,z_shift])
 		protein_copy.points = protein.points + relative_origin
 		bilayer.add(protein_copy,before=True)
-
 	#---write the full system before running trim_waters
 	scale_method = atomistic_or_coarse()
 	bilayer.write(state.here+'combo-untrimmed.gro')
