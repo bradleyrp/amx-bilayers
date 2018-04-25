@@ -84,6 +84,7 @@ mdp specs:|{
 'script':'scripts/bilayer-flat.py',
 'params':'parameters.py',
 'tags':['cgmd','bilayer','free','flat','tested_2017.09.18'],
+'prelude':'make go lipidome clean && make clean sure',
 'extensions':[
     '@extras/*.py',
     '@extras/geometry_tools/*.py',
