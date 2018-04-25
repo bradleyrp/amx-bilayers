@@ -8,6 +8,7 @@
 #
 'script':'scripts/bilayer.py',
 'params':'parameters.py',
+'prelude':'make go lipidome clean && make clean sure',
 'tags':['cgmd','bilayer','free','tested_2017.09.13','tested_2017.10.18_dev'],
 'extensions':[
     '@extras/*.py',
