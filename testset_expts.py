@@ -26,7 +26,8 @@ USAGE NOTES:|
         however several versions are available (run "python inputs/martini/bin/martinize.py -h" for docs)
     tested with a random secondary structure with elastic restains or with extended dihedrals and DSSP
 
-start structure: inputs/1H0A-prepped.pdb
+#! structure-special is a non-public repository
+start structure: @structure-special/1H0A-prepped.pdb
 martinize flags: -ed
 martinize ff: martini22
 
@@ -93,8 +94,8 @@ store: inputs/bilayer-cgmd-small-flat.gro
 'prelude':"make go lipidome clean && make clean sure",
 'metarun':[
 {'step':'protein','do':'martinize','settings':"""
-# EXTERNAL REQUIREMENT
-start structure: inputs/1H0A-prepped.pdb
+#! structure-special is a non-public repository
+start structure: @structure-special/1H0A-prepped.pdb
 """},
 {'step':'adhere','do':'bilayer_protein_adhesion','settings':"""
 USAGE NOTES:|
