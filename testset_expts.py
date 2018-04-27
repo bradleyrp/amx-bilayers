@@ -6,10 +6,11 @@
 ###
 ##
 #
-'tags':['cgmd','tested_2017.09.15','note_structure_repo'],
+'tags':['cgmd','tested_2017.09.15','note_MANUAL_REQS'],
+'prelude':'make go lipidome clean && make clean sure',
 'metarun':[
 
-#---step 1: coarse-grain the protein using MARTINI
+# step 1: coarse-grain the protein using MARTINI
 {'step':'protein','do':'martinize','settings':"""
 
 USAGE NOTES:|
@@ -25,18 +26,86 @@ USAGE NOTES:|
         however several versions are available (run "python inputs/martini/bin/martinize.py -h" for docs)
     tested with a random secondary structure with elastic restains or with extended dihedrals and DSSP
 
-start structure: inputs/structure-repo/proteins/1H0A-prepped.pdb
+start structure: inputs/1H0A-prepped.pdb
 martinize flags: -ed
 martinize ff: martini22
 
 """},
-#---step 2: run the bilayer adhesion procedure
+# step 2: run the bilayer adhesion procedure
 {'step':'adhere','do':'bilayer_protein_adhesion','settings':"""
-
+# run the 288 bilayer first or use a different starting structure
+bilayer structure: inputs/bilayer-cgmd-288.gro
 placement method: globular_up_down
 group up: all
 group down: ['resid 1-22','resid 68-72']
-bilayer structure: inputs/structure-repo/bilayers-cgmd/bilayer-cgmd-288.gro
+protein water gap: 5
+protein_lattice:|{
+    'nrows':1,'ncols':1,
+    'lattice_type':'square',
+    'space_scale':20,
+    'total_proteins':1,
+    'protein_shift_up':1.2,}
+equilibration: ['npt-bilayer-short','npt-bilayer']
+mdp specs:|{
+    'group':'cgmd',
+    'mdps':{
+        'input-em-steep-in.mdp':['minimize'],
+        'input-md-npt-bilayer-short-eq-in.mdp':[{
+            'restrain':'posre-com-only','pressure':'npt-semiisotropic-weak',
+            'nsteps':50000,'dt':0.001,'groups':'protein','temperature':'protein'}],
+        'input-md-npt-bilayer-eq-in.mdp':[{'restrain':'posre-com-only',
+            'pressure':'npt-semiisotropic-weak',
+            'nsteps':50000,'dt':0.01,'groups':'protein','temperature':'protein'}],
+        'input-md-in.mdp':[{'restrain':'posre-com-only','pressure':'npt-semiisotropic-weak',
+            'nsteps':50000,'dt':0.04,'groups':'protein','temperature':'protein'}],},}
+"""},
+]},
+
+'enth_demo_flat_prep':{
+#####
+####
+###
+##
+#
+'tags':['cgmd'], # 14.4 min
+'prelude':"make go lipidome clean && make clean sure",
+'metarun':[
+{'step':'bilayer','do':'bilayer_control_flat','settings':"""
+step: bilayer
+monolayer top: 90
+monolayer bottom: 90
+composition top: {'DOPC':0.64,'DOPS':0.16,'POP2':0.2}
+composition bottom: {'POPC':1.0}
+"""},
+{'quick':'table','settings':"""
+ready: s01-bilayer/md.part0003.gro
+store: inputs/bilayer-cgmd-small-flat.gro
+"""},
+]},
+
+'enth_demo_flat':{
+#####
+####
+###
+##
+#
+'tags':['cgmd','note_structure_repo_protein'],
+'prelude':"make go lipidome clean && make clean sure",
+'metarun':[
+{'step':'protein','do':'martinize','settings':"""
+# EXTERNAL REQUIREMENT
+start structure: inputs/1H0A-prepped.pdb
+"""},
+{'step':'adhere','do':'bilayer_protein_adhesion','settings':"""
+USAGE NOTES:|
+	Requires inputs/bilayer-cgmd-small.gro via enth_demo_flat_prep
+	This procedure is based on testset_bilayer_protein_flat. 	
+force field: martini_upright_alt
+sources: ['@martini/auto_ff/martini_upright_alt.ff']
+bilayer structure: inputs/bilayer-cgmd-small-flat.gro
+placement method: globular_up_down
+group up: all
+group down: ['resid 1-22','resid 68-72']
 protein water gap: 5
 protein_lattice:|{
     'nrows':1,'ncols':1,
@@ -45,15 +114,20 @@ protein_lattice:|{
     'total_proteins':1,
     'protein_shift_up':1.2,}
 
-equilibration: ['npt-bilayer']
+# EQUILIBRATION
+equilibration: ['npt-bilayer-short','npt-bilayer']
 mdp specs:|{
     'group':'cgmd',
     'mdps':{
         'input-em-steep-in.mdp':['minimize'],
-        'input-md-npt-bilayer-eq-in.mdp':[{'restrain':'posre-com-only','pressure':'npt-semiisotropic-weak',
-            'nsteps':50000,'dt':0.01,'groups':'protein','temperature':'protein'}],
+        'input-md-npt-bilayer-short-eq-in.mdp':[{'restrain':'posre-com-only',
+            'pressure':'npt-semiisotropic-weak',
+            'nsteps':500000,'groups':'protein','temperature':'protein','dt':0.001}],
+        'input-md-npt-bilayer-eq-in.mdp':[{'restrain':'posre-com-only',
+            'pressure':'npt-semiisotropic-weak',
+            'nsteps':500000,'groups':'protein','temperature':'protein','dt':0.01}],
         'input-md-in.mdp':[{'restrain':'posre-com-only','pressure':'npt-semiisotropic-weak',
-            'nsteps':50000,'dt':0.04,'groups':'protein','temperature':'protein'}],},}
+            'nsteps':500000,'groups':'protein','temperature':'protein'}],},}
 
 """},
 ]},
