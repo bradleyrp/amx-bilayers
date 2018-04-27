@@ -33,6 +33,7 @@ martinize ff: martini22
 """},
 # step 2: run the bilayer adhesion procedure
 {'step':'adhere','do':'bilayer_protein_adhesion','settings':"""
+# run the 288 bilayer first or use a different starting structure
 bilayer structure: inputs/bilayer-cgmd-288.gro
 placement method: globular_up_down
 group up: all
