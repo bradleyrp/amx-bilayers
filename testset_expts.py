@@ -6,7 +6,7 @@
 ###
 ##
 #
-'tags':['cgmd','tested_2017.09.15','note_MANUAL_REQS'],
+'tags':['cgmd','tested_2018.04.24','note_MANUAL_REQS'],
 'prelude':'make go lipidome clean && make clean sure',
 'metarun':[
 
@@ -67,7 +67,7 @@ mdp specs:|{
 ###
 ##
 #
-'tags':['cgmd'], # 14.4 min
+'tags':['cgmd','test'], # 14.4 min
 'prelude':"make go lipidome clean && make clean sure",
 'metarun':[
 {'step':'bilayer','do':'bilayer_control_flat','settings':"""
@@ -89,7 +89,7 @@ store: inputs/bilayer-cgmd-small-flat.gro
 ###
 ##
 #
-'tags':['cgmd','note_structure_repo_protein'],
+'tags':['cgmd','note_structure_repo_protein','test'],
 'prelude':"make go lipidome clean && make clean sure",
 'metarun':[
 {'step':'protein','do':'martinize','settings':"""
