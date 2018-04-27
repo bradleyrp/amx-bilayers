@@ -9,7 +9,9 @@
 'script':'scripts/bilayer.py',
 'params':'parameters.py',
 'prelude':'make go lipidome clean && make clean sure',
-'tags':['cgmd','bilayer','free','tested_2017.09.13','tested_2017.10.18_dev'],
+'tags':['cgmd','bilayer','free',
+    'tested_2017.09.13','tested_2017.10.18_dev',
+    'tested_2018.04.25'],
 'extensions':[
     '@extras/*.py',
     '@extras/geometry_tools/*.py',
@@ -83,7 +85,7 @@ mdp specs:|{
 #
 'script':'scripts/bilayer-flat.py',
 'params':'parameters.py',
-'tags':['cgmd','bilayer','free','flat','tested_2017.09.18'],
+'tags':['cgmd','bilayer','free','flat','tested_2017.09.18','tested_2018.04.25'],
 'prelude':'make go lipidome clean && make clean sure',
 'extensions':[
     '@extras/*.py',
@@ -165,9 +167,8 @@ mdp specs:|{
 ###
 ##
 #
-'tags':['cgmd','tested_2017.09.13','tested_2017.10.18_dev'],
+'tags':['cgmd','tested_2017.09.13','tested_2017.10.18_dev','tested_2018.04.25'], # 10 min
 'prelude':'make go lipidome clean && make clean sure',
-#---duration is 10.0min on dark
 'metarun':[
 {'step':'bilayer','do':'bilayer_control_cgmd'},
 {'step':'large','do':'multiply','settings':"""
@@ -188,8 +189,10 @@ ny: 2
 ###
 ##
 #
-#---duration is ~30min on dark
-'tags':['cgmd','tested_2017.09.13','tested_2017.10.17_dev'],
+'tags':['cgmd',
+    'tested_2017.09.13','tested_2017.10.17_dev',
+    'tested_2018.04.25', # ~30 min
+    ],
 'metarun':[
 {'step':'bilayer','do':'bilayer_control_flat'},
 {'step':'large','do':'multiply','settings':"""
