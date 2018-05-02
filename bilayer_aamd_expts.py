@@ -8,8 +8,11 @@
 #
 'script':'scripts/bilayer.py',
 'params':'parameters-aamd.py',
-'tags':['aamd','tested_2017.10.20.1000_dev','note_structure_repo'],
-#---duration is 66.4 minutes on dark (a large vacuum gap disappears)
+'tags':['aamd',
+# 'tested_2017.10.20.1000_dev'
+# duration is 66.4 minutes on dark (a large vacuum gap disappears)
+'note_structure_repo'],
+'prelude':'make go bilayer_control_aamd_restrain clean',
 'extensions':[
     '@extras/*.py',
     '@extras/geometry_tools/*.py',
@@ -26,7 +29,7 @@ USAGE NOTES:|
 
 step:               bilayer
 
-#---SHAPE AND COMPOSITION
+# SHAPE AND COMPOSITION
 shape:              flat            # initial mesh shape flat
 aspect:             1.0             # XY proportion for flat bilayers
 binsize:            1.2             # grid spacing for initial lipid configuration
@@ -37,11 +40,11 @@ monolayer bottom:   37              # number of lipids in the bottom leaflet (no
 lipid structures:   @structure-repo/bilayers-aamd/lipid-structures # folder for lipid structures
 landscape metadata: @charmm/landscape.json                         # colloquial types for different molecules
 	
-#---COMPOSITIONS (propotional -- no need to sum to unity)
+# COMPOSITIONS (propotional -- no need to sum to unity)
 composition top:    {'DOPC':1,'DOPS':1,'PI2P':1,'CHL1':1}
 composition bottom: {'POPC':3,'CHL1':1}
 
-#---SOLVATION
+# SOLVATION
 cation:             NA              # residue name for the cation (must be found in the ff)
 anion:              CL              # residue name for the anion (must be found in the ff)
 ionic strength:     0.150           # molar ionic strength
@@ -52,16 +55,16 @@ solvent:            spc216          # water box (must be copied via files)
 thickness:          10              # thickness of the box at the solvate step
                                     # ...be careful with this. you can get widely varying levels of water
 
-#---COPY DEPENDENCIES
+# COPY DEPENDENCIES
 files:              []
 sources:            ['@charmm/charmm36.ff','@charmm/auto_ff/charmm36_upright.ff']
 
-#---FORCE FIELD
+# FORCE FIELD
 force field:           charmm36            # specify the name of the force field (minus ".ff" suffix)
                                            # note non-standard force fields must be copied via "sources"
 force field upright:   charmm36_upright    # force field with "upright" vacuum pack restraints
 
-#---EQUILIBRATION
+# EQUILIBRATION
 equilibration: npt-bilayer-short,npt-bilayer
 mdp specs:|{
 	'group':'aamd',
@@ -176,7 +179,9 @@ mdp specs:|{
 ###
 ##
 #
-'tags':['aamd','tag_prelim','tested_2017.10.20.1000_dev'],
+'tags':['aamd','tag_prelim',
+# 'tested_2017.10.20.1000_dev',
+'tested_else'], # tested with bilayer_control_aamd_test
 'params':'@bilayers/parameters.py',
 'extensions':[
 	'@extras/geometry_tools/*.py'],
