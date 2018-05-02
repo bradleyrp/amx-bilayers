@@ -11,7 +11,8 @@
 'tags':['aamd',
 # 'tested_2017.10.20.1000_dev'
 # duration is 66.4 minutes on dark (a large vacuum gap disappears)
-'note_structure_repo'],
+# 2 hours on dark now that we added a continue segment
+'note_structure_repo','tested_2018.05.02'],
 'prelude':'make go bilayer_control_aamd_restrain clean',
 'extensions':[
     '@extras/*.py',

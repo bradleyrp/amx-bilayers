@@ -12,6 +12,9 @@ remove_ions(structure='prepped-charged',gro='prepped-water')
 counterions(structure='prepped-water',gro='prepped')
 counterion_renamer('prepped')
 write_topology('system-minimize.top')
+#! hacking in itp for now
+if 'itp' not in state.keys() and 'itp' in settings.keys():
+	state.itp = settings.itp
 minimize('prepped',top='system-minimize')
 detect_lipids(structure='prepped')
 detect_ions(structure='prepped')
