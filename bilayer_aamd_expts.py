@@ -21,7 +21,6 @@
 'settings':"""
 
 USAGE NOTES:|
-	you MUST run `make go bilayer_control_aamd_restrain clean` first to generate restraints
 	use this procedure to make a "free" bilayer
 	this method packs lipids in vacuum with restraints
 	requires restrains generated via a run named "generate_lipidome_restraints"
@@ -91,6 +90,7 @@ mdp specs:|{
 #
 'script':'scripts/bilayer-careful.py',
 'params':'parameters-aamd.py',
+'prelude':'make go bilayer_control_aamd_restrain clean',
 'tags':['aamd','test'],
 'extensions':[
     '@extras/*.py',
@@ -99,7 +99,6 @@ mdp specs:|{
 'settings':"""
 
 USAGE NOTES:|
-	you MUST run `make go bilayer_control_aamd_restrain clean` first to generate restraints
 	use this procedure to make a "free" bilayer
 	this method packs lipids in vacuum with restraints
 	requires restrains generated via a run named "generate_lipidome_restraints"
