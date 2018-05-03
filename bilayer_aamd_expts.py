@@ -143,6 +143,7 @@ force field upright:   charmm36_upright    # force field with "upright" vacuum p
 force field restrain:  charmm36_restrain   # force field with all lipid atoms restrained for water relax
 
 #---EQUILIBRATION
+maxwarn: 2
 equilibrate_restrain: ['bilayer-s1-restr','bilayer-s2-restr']
 equilibrate_free: ['bilayer-s3-free','bilayer-s4-free','bilayer-s5-free','bilayer']
 equilibrate_restrain_final: "md-bilayer-s2-restr"
