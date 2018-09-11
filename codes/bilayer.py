@@ -307,7 +307,7 @@ def vacuum_pack(structure='vacuum',name='vacuum-pack',gro='vacuum-packed',pbc='n
 	"""
 	gmx('grompp',base='md-%s'%name,top='vacuum',
 		structure=structure,log='grompp-%s'%name,mdp='input-md-%s-eq-in'%name,
-		maxwarn=100)
+		maxwarn=100,r='%s.gro'%structure)
 	gmx('mdrun',base='md-%s'%name,log='mdrun-%s'%name,nonessential=True)
 	if pbc:
 		remove_jump(structure='md-%s'%name,tpr='md-'+name,gro='md-%s-%s'%(name,pbc))

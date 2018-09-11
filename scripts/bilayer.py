@@ -9,8 +9,7 @@ write_continue_script()
 build_bilayer(name='vacuum-bilayer')
 copy_file('vacuum-bilayer.gro','vacuum.gro')
 state.force_field = state.force_field_upright
-write_top('vacuum.top')
-minimize('vacuum')
+minimize('vacuum',restraints=True)
 vacuum_pack_loop(
 	structure='vacuum-minimized',
 	tpr='em-vacuum-steep',
@@ -24,7 +23,7 @@ solvate(
 	structure='solvate-dry',
 	gro='solvate')
 write_top('solvate.top')
-minimize('solvate')
+minimize('solvate',restraints=True)
 remove_jump(
 	structure='solvate-minimized',
 	tpr='em-solvate-steep',
@@ -32,7 +31,7 @@ remove_jump(
 counterions('solvate-nojump','solvate')
 counterion_renamer('counterions')
 write_top('counterions.top')
-minimize('counterions')
+minimize('counterions',restraints=True)
 remove_jump(
 	structure='counterions-minimized',
 	tpr='em-counterions-steep',
