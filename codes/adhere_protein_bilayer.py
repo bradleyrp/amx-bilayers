@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 import os,shutil,glob,re
-from runner import DotDict
+#from runner import DotDict
+from ortho.dictionary import DotDict
 from copy import deepcopy
 try:
 	#---! automacs tries to load this even for e.g. make upload

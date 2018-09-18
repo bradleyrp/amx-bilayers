@@ -9,8 +9,15 @@ import numpy as np
 import random
 from copy import deepcopy
 
+#from amx import makemesh
+
+#_requires = ['makemesh']
+# request functions from importer
+#for key in _requires:
+#	globals()[key] = ('placeholder',key)
+
 _not_reported = ['makemesh','rotation_matrix','dotplace','distinguish_leaflets','deepcopy']
-_shared_extensions = ['bilayer_sorter']
+_shared_extensions = ['bilayer_sorter','remove_jump','bilayer_middle']
 
 def random_lipids(total,composition,binsize):
 	"""
@@ -92,6 +99,8 @@ def makeshape():
 	elif shape == 'flat': pts = [p+0 for p in pts]
 	else: raise Exception('\n[ERROR] unclear bilayer topography: %s'%shape)
 	#---previously used PBCs and selected the middle tile here before makemesh and then shifted to origin
+	#! temporary hack
+	from amx import makemesh
 	monolayer_meshes = [makemesh(p,vecs,debug=False,curvilinear=False) for p in pts]
 	return pts,monolayer_meshes,np.array([v for v in vecs]+[lz])
 
@@ -100,6 +109,8 @@ def build_bilayer(name,random_rotation=True):
 	Create a new bilayer according to a particular topography.
 	Historical note: comes from amx/procedures/bilayer.py
 	"""
+	#! temporary hack. perhaps decorate?
+	from amx import read_gro
 	#---collect the bilayer topography and the lipid points
 	ptsmid,monolayer_mesh,vecs = makeshape()
 
@@ -122,7 +133,7 @@ def build_bilayer(name,random_rotation=True):
 	lnames = list(set(list(monolayer0.keys())+list(monolayer1.keys())))
 	for key in lnames:
 		#---previously used read_molecule
-		incoming = read_gro(os.path.join(state.q('lipid_structures'),key+'.gro'),cwd='./')
+		incoming = read_gro(os.path.join(state.get('lipid_structures'),key+'.gro'),cwd='./')
 		lpts,atomnames = np.array(incoming['points']),np.array(incoming['atom_names'])
 		lipids[key] = {'lpts':lpts,'atomnames':atomnames}
 		lipid_order.append(key)
@@ -307,7 +318,7 @@ def vacuum_pack(structure='vacuum',name='vacuum-pack',gro='vacuum-packed',pbc='n
 	"""
 	gmx('grompp',base='md-%s'%name,top='vacuum',
 		structure=structure,log='grompp-%s'%name,mdp='input-md-%s-eq-in'%name,
-		maxwarn=100)
+		maxwarn=100,r='%s.gro'%structure)
 	gmx('mdrun',base='md-%s'%name,log='mdrun-%s'%name,nonessential=True)
 	if pbc:
 		remove_jump(structure='md-%s'%name,tpr='md-'+name,gro='md-%s-%s'%(name,pbc))

@@ -200,7 +200,8 @@
 	},	
 'screening':{
 	'standard':{'epsilon_r':15},
-	'off':{'epsilon_r':0},
+	#'off':{'epsilon_r':0},
+	'off':{'epsilon_r':1000},
 	},
 'groups':{
 	'none':{
@@ -299,7 +300,7 @@
 	'restrain':'posre',
 	'screening':'off',
 	'potential':'bilayer-pack',
-	'constrain':'hydrogen',
+	'constrain':'all',#'hydrogen',
 	'integrate':{
 		'integrator':'md',
 		'tinit':0.0,
