@@ -205,11 +205,11 @@ membrane-v561-dense-small:
     equilibrate_restrain_final: "md-bilayer-s2-restr"
     maxwarn: 2
 
-membrane-v561:
+ptdins_study_base:
   tags:
   - aamd
   - note_structure_repo
-  - tested_2018.05.02
+  # tag to indicate this is part of the example ptdins_study
   script: scripts/bilayer-careful.py
   params: parameters-aamd.py
   extensions: 
@@ -290,3 +290,49 @@ membrane-v561:
     equilibrate_free: ['bilayer-s3-free','bilayer-s4-free','bilayer-s5-free','bilayer']
     equilibrate_restrain_final: "md-bilayer-s2-restr"
     maxwarn: 2
+
+s2: #solvate_bilayer_replicate:
+  tags:
+  - aamd
+  - piecewise
+  - requires_another_structure #! find the correct term you were using
+  script: scripts/bilayer-solvate-exact.py
+  extends: ptdins_study_base
+  settings:
+    USAGE NOTES: |
+      a single stage in a procedure for making bilayer replicates for preexisting simulations
+      goal is to solvate with an exact amount of water
+      !!! develop this into a metarun at some point
+    files: 
+      - inputs/vacuum-packed.gro
+      - inputs/md-vacuum-pack3.ndx
+      - inputs/md-vacuum-pack3.tpr
+    incoming: vacuum-packed.gro # redundant with above
+    water: 1000
+    thickness: 12
+    step: solvate
+
+s3:
+  tags:
+  - aamd
+  - piecewise
+  - requires_another_structure #! find the correct term you were using
+  script: scripts/bilayer-counterions-exact.py
+  extends: ptdins_study_base
+  settings:
+    USAGE NOTES: |
+      a single stage in a procedure for making bilayer replicates for preexisting simulations
+      goal is to solvate with an exact amount of water
+      !!! develop this into a metarun at some point
+      SOL 59445
+      MG 308 
+      CL 396
+    files: 
+      - inputs/vacuum-packed.gro
+      - inputs/md-vacuum-pack3.ndx
+      - inputs/md-vacuum-pack3.tpr
+    incoming: vacuum-packed.gro # redundant with above
+    ions:
+      MG: 10
+      CL: 10
+    step: counterions

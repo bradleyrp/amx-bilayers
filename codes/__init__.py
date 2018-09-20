@@ -8,7 +8,8 @@ Codes for making protein-membrane systems using automacs.
 
 from .bilayer import *
 from .bilayer_bookkeeping import *
-from .adhere_protein_bilayer import *
+from .adhere_protein_bilayer import detect_lipids
+_shared_extensions = ['detect_lipids']
 
 if False:
 	import glob,os,importlib,re

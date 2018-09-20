@@ -338,7 +338,8 @@ def detect_lipids(structure):
 	#---! curently detect_Lipids and detect ions is only necessary for bilayer sorter -- move it there??
 	#---! hard-coded martini landscape
 	land = Landscape()
-	bilayer = GMXStructure(state.here+structure+'.gro')
+	suffix = '' if structure.endswith('.gro') else '.gro'
+	bilayer = GMXStructure(state.here+structure+suffix)
 	lipids = land.lipids() + land.sterols()
 	#---! hack for restraint-named lipids
 	lipids += ['%sR'%i for i in lipids if len(i)==4]
