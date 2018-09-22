@@ -155,6 +155,8 @@ v562:
     water: 60149
     thickness: 25
     step: solvate
+    monolayer top: 400
+    monolayer bottom: 400
     genion overrides:
       np: 308
       pq: 2
