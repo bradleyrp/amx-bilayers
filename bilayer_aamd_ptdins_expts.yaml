@@ -126,19 +126,19 @@ atomistic_bilayer:
         input-md-vacuum-pack2-eq-in.mdp: ['vacuum-packing',{'ref_p':'500.0 1.0'}]
         input-md-vacuum-pack3-eq-in.mdp: ['vacuum-packing']
         input-md-bilayer-s1-restr-eq-in.mdp: ['npt-bilayer-simple',
-          {'dt':0.0001,'nsteps':50000,'compressibility':'0.0 4.5e-5',
+          {'dt':0.0001,'nsteps':100000,'compressibility':'0.0 4.5e-5',
             'restrain':'posre-com-only','tau_p':0.1}]
         input-md-bilayer-s2-restr-eq-in.mdp: ['npt-bilayer-simple',
-          {'dt':0.0002,'nsteps':50000,'compressibility':'0.0 4.5e-5',
+          {'dt':0.0002,'nsteps':100000,'compressibility':'0.0 4.5e-5',
             'restrain':'posre-com-only','tau_p':0.5}]
         input-md-bilayer-s3-free-eq-in.mdp: ['npt-bilayer-simple',
-          {'dt':0.0002,'nsteps':50000,'compressibility':'0.0 4.5e-5',
+          {'dt':0.0002,'nsteps':100000,'compressibility':'0.0 4.5e-5',
             'restrain':'posre-com-only','tau_p':0.5}]
         input-md-bilayer-s4-free-eq-in.mdp: ['npt-bilayer-simple',
-          {'dt':0.001,'nsteps':50000,'compressibility':'0.0 4.5e-5',
+          {'dt':0.001,'nsteps':100000,'compressibility':'0.0 4.5e-5',
             'restrain':'posre-com-only','tau_p':0.5}]
         input-md-bilayer-s5-free-eq-in.mdp: ['npt-bilayer-simple',
-          {'dt':0.002,'nsteps':50000,'restrain':'posre-com-only','tau_p':0.5}]
+          {'dt':0.002,'nsteps':100000,'restrain':'posre-com-only','tau_p':0.5}]
         input-md-bilayer-eq-in.mdp: ['npt-bilayer',
           {'dt':0.002,'nsteps':100000,'restrain':'posre-com-only'}]
         input-md-in.mdp: ['npt-bilayer',{'restrain':'posre-com-only','nsteps':500000}]
