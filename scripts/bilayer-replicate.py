@@ -11,6 +11,10 @@ copy_file('vacuum-bilayer.gro','vacuum.gro')
 state.force_field = state.force_field_upright
 write_top('vacuum.top')
 minimize('vacuum',restraints=True)
+vacuum_pack_loop(
+	structure='vacuum-minimized',
+	tpr='em-vacuum-steep',
+	gro='vacuum-packed')
 restuff(
 	structure='vacuum-packed',
 	gro='solvate-dry',
@@ -22,22 +26,14 @@ solvate(
 water_solvate_exact('solvate-big.gro','solvate.gro')
 structure = GMXStructure(state.here+'solvate.gro')
 state.composition = structure.detect_composition()
-
 write_top('solvate.top')
 minimize('solvate',restraints=True)
 remove_jump(
 	structure='solvate-minimized',
 	tpr='em-solvate-steep',
 	gro='solvate-nojump')
-
-remove_jump(
-	structure='solvate-minimized',
-	tpr='em-solvate-steep',
-	gro='solvate-nojump')
-
 counterions('solvate-nojump','solvate',restraints=True,
 	counts=state.genion_overrides)
-
 counterion_renamer('counterions')
 write_top('counterions.top')
 minimize('counterions',restraints=True)
