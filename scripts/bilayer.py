@@ -9,6 +9,7 @@ write_continue_script()
 build_bilayer(name='vacuum-bilayer')
 copy_file('vacuum-bilayer.gro','vacuum.gro')
 state.force_field = state.force_field_upright
+write_top('vacuum.top')
 minimize('vacuum',restraints=True)
 vacuum_pack_loop(
 	structure='vacuum-minimized',
