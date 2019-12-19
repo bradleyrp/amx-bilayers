@@ -1,0 +1,64 @@
+bilayer_control_flat:
+  #! omitted the prelude during development
+  tags: ['cgmd','bilayer','free','flat']
+  script: scripts/bilayer-flat.py
+  params: parameters.py
+  extensions:
+    - "@extras"
+    - "@extras/geometry_tools"
+    - "@bilayers/codes"
+  settings:
+    step:               bilayer
+    # shape and composition
+    shape:              flat    # initial mesh shape flat
+    aspect:             1.0     # XY proportion for flat bilayers
+    binsize:            1.2     # grid spacing for initial lipid configuration
+    monolayer offset:   1.5     # initial distance between leaflets 
+    monolayer top:      90      # number of lipids in the top leaflet
+    monolayer bottom:   90      # number of lipids in the bottom leaflet 
+                                # none for symmetric
+    # folder for lipid structures and yaml metadata
+    lipid structures:   inputs/martini/library-lipidome-structs/  
+    # colloquial types for different molecules
+    landscape metadata: inputs/martini/auto_ff/landscape.json     
+    # compositions (propotional -- no need to sum to unity)
+    composition top:    {'DOPC':0.64,'DOPS':0.16,'POP2':0.2}
+    composition bottom: {'POPC':1.0,'DPPC':0.5}
+    # SOLVATION
+    cation:             NA+             # residue name for the cation (must be found in the ff)
+    anion:              CL-             # residue name for the anion (must be found in the ff)
+    ionic strength:     0.150           # molar ionic strength
+    sol:                W               # residue name for water
+    atom resolution:    cgmd            # either cgmd or aamd
+    water buffer:       8               # water-other gap distance in Angstroms (avoid waters in bilayer!)
+    protein_water_gap:  3               #! hacking this in
+    solvent:            martini-water   # water box (must be copied via files)
+    solvent_thickness:  18              # thickness of the box at the solvate step (nm)
+    # COPY DEPENDENCIES
+    files:    ['inputs/martini/library-general-structs/martini-water.gro']
+    sources: [
+        'inputs/martini/martini-sources.ff',
+        'inputs/martini/auto_ff/martini_upright.ff',
+        'inputs/martini/auto_ff/martini_upright_alt.ff']
+    # FORCE FIELD
+    force field: martini-sources  # specify the name of the FF (minus ".ff" suffix)
+                                  # note non-standard force fields must be copied via "sources"
+    force field upright: martini_upright # force field with "upright" vacuum pack restraints
+    force field flat: martini_upright_alt # force field with alternate lipids for remaining flat
+    # after adding restraints we run dynamics with the following MDP files
+    flat_restart_mdps: ['input-md-npt-bilayer-eq-in','input-md-in']
+    # EQUILIBRATION
+    equilibration: npt-bilayer
+    mdp_specs:
+      group: cgmd
+      mdps:
+        input-em-steep-in.mdp: ['minimize']
+        input-em-cg-in.mdp: ['minimize',{'integrator':'cg'}]
+        input-md-vacuum-pack1-eq-in.mdp: ['vacuum-packing',{'ref_p':'500 1','nsteps':100000}]
+        input-md-vacuum-pack2-eq-in.mdp: ['vacuum-packing',{'nsteps':100000}]
+        input-md-npt-bilayer-short-eq-in.mdp: ['npt-bilayer',
+                {'pressure':'npt-semiisotropic-weak','dt':0.001,'nsteps':200000}]
+        input-md-npt-bilayer-eq-in.mdp: ['npt-bilayer',
+                {'restrain':'posre-com-only','pressure':'npt-semiisotropic-weak','dt':0.01}]
+        input-md-in.mdp: [{'restrain':'posre-com-only','pressure':'npt-semiisotropic-weak',
+                'nsteps':500000}]

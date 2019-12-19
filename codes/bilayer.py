@@ -4,7 +4,7 @@
 Bilayer construction routines.
 """
 
-import os,re,shutil
+import os,re,shutil,glob
 import numpy as np
 import random
 from copy import deepcopy
@@ -15,6 +15,138 @@ from copy import deepcopy
 # request functions from importer
 #for key in _requires:
 #	globals()[key] = ('placeholder',key)
+#! hacking
+
+## START cobbling together more code
+
+from amx.utils import status
+dotplace = lambda n: re.compile(r'(\d)0+$').sub(r'\1',"%8.3f"%float(n)).ljust(8)
+
+from amx.gromacs.structure_tools import GMXStructure
+from amx.gromacs.topology_tools import *
+
+def get_box_vectors(structure,gro=None,d=0,log='checksize'):
+	"""
+	Return the box vectors.
+	"""
+	if not structure.endswith('.gro'):
+		structure = structure + '.gro'
+	if not gro: 
+		gro = 'check-box-'+structure
+	#---note that we consult the command_library here
+	gmx('editconf',structure=structure,out=gro,
+		log='editconf-%s'%log,d=d)
+	with open(state.here+'log-editconf-%s'%log,'r') as fp: lines = fp.readlines()
+	box_vector_regex = r'\s*box vectors\s*\:\s*([^\s]+)\s+([^\s]+)\s+([^\s]+)'
+	box_vector_new_regex = r'\s*new box vectors\s*\:\s*([^\s]+)\s+([^\s]+)\s+([^\s]+)'
+	runon_regex = r'^\s*([-]?[0-9]+\.?[0-9]{0,3})\s*([-]?[0-9]+\.?[0-9]{0,3})\s*([-]?[0-9]+\.?[0-9]{0,3})'
+	old_line = [l for l in lines if re.match(box_vector_regex,l)][0]
+	vecs_old = re.findall(r'\s*box vectors\s*:([^\(]+)',old_line)[0]
+	try:
+		#---sometimes the numbers run together
+		try: vecs_old = [float(i) for i in vecs_old.strip(' ').split()]
+		except: vecs_old = [float(i) for i in re.findall(runon_regex,vecs_old)[0]]
+		#---repeat for new box vectors
+		new_line = [l for l in lines if re.match(box_vector_new_regex,l)][0]
+		vecs_new = re.findall(r'\s*box vectors\s*:([^\(]+)',new_line)[0]
+		try: vecs_new = [float(i) for i in vecs_new.strip(' ').split()]
+		except: vecs_new = [float(i) for i in re.findall(runon_regex,vecs_new)[0]]
+	except:
+		import pdb;pdb.set_trace()
+	#---no need to keep the output since it is a verbatim copy for diagnostic only
+	os.remove(os.path.join(state.here,gro))
+	#import pdb;pdb.set_trace()
+	return vecs_old,vecs_new
+
+def component(name,count=None,top=False):
+	"""
+	Add or modify the composition of the system and return the count if none is provided.
+	"""
+	#---start a composition list if absent
+	if 'composition' not in state: 
+		state.composition = []
+		try: state.composition.append([name,int(count)])
+		except: raise Exception('[ERROR] the first time you add a component you must supply a count')
+	#---if count is supplied then we change the composition
+	names = list(zip(*state.composition))[0]
+	if count != None:
+		if name in names: state.composition[names.index(name)][1] = int(count)
+		else: 
+			if top: state.composition.insert(0,[name,int(count)])
+			else: state.composition.append([name,int(count)])
+	#---return the requested composition
+	names = list(zip(*state.composition))[0]
+	return state.composition[names.index(name)][1]
+
+def restuff(structure,gro,tpr,ndx):
+	"""
+	Restuff everything in the box.
+	Used as a prelude for the generic solvate function.
+	! Desperately needs a better name.
+	"""
+	#---added to the beginning of solvate for the bilayers. removed for proteins
+	#---! is above necessary ???
+	#---re-stuff everything in the box
+	#---! might want to use the center flag on trjconv
+	#! 2019.12.11 note that if you send a basename to trjconv and an xtc exists
+	#! then it will default to that xtc instead of the gro file
+	#! however we cannot enforce gro as the extension by default
+	gmx('trjconv',structure=structure,inpipe='0\n',pbc='mol',
+		input=tpr,index=ndx,out=gro+'.gro',log='trjconv-restuff')
+
+def get_last(name,cwd=None):
+	"""
+	Get the last of a particular file by extension.
+	"""
+	if not re.match('^[a-z]+$',name): 
+		raise Exception('extension %s can only have lowercase letters'%name)
+	if not cwd: cwd = state.here
+	fns = glob.glob(os.path.join(cwd,'*.tpr'))
+	fns_recent = sorted(fns,key=lambda x:os.path.getmtime(x))
+	if len(fns_recent)==0: raise Exception('could not find a %s file in %s'%(name,cwd))
+	#---by convention we strip extensions because everything runs through gmxcalls
+	fn = os.path.basename(fns_recent[-1])
+	return os.path.splitext(fn)[0]
+
+def count_molecules(structure,resname):
+	"""
+	Count the number of molecules in a system using make_ndx.
+	"""
+	gmx('make_ndx',structure=structure,out=structure+'-count',
+		log='make-ndx-%s-check'%structure,inpipe='q\n')
+	with open(state.here+'log-make-ndx-%s-check'%structure) as fp: lines = fp.readlines()
+	if not resname: raise Exception('cannot count a null resname: %s'%resname)
+	try:
+		residue_regex = r'^\s*[0-9]+\s+%s\s+\:\s+([0-9]+)\s'%resname
+		count, = [int(re.findall(residue_regex,l)[0]) for l in lines if re.match(residue_regex,l)]
+	except: raise Exception('cannot find resname "%s" in %s'%(resname,'make-ndx-%s-check'%structure))
+	return count
+
+def gro_combinator(*args,**kwargs):
+	"""
+	Concatenate an arbitrary number of GRO files.
+	"""
+	cwd = kwargs.pop('cwd','./')
+	out = kwargs.pop('gro','combined')
+	box = kwargs.pop('box',False)
+	name = kwargs.pop('name','SYSTEM')
+	collection = []
+	for arg in args: 
+		with open(cwd+arg+'.gro' if not re.match(r'^.+\.gro',arg) else cwd+arg) as fp:
+			collection.append(fp.readlines())
+	with open(cwd+out+'.gro','w') as fp:
+		fp.write('%s\n%d\n'%(name,sum(len(i) for i in collection)-len(collection)*3))
+		for c in collection: 
+			for line in c[2:-1]: fp.write(line)
+		#---use the box vectors from the first structure
+		if not box: fp.write(collection[0][-1])		
+		else: fp.write(' %.3f %.3f %.3f\n'%tuple(box))
+	#---! added this because resnrs were scrambled
+	gmx('editconf',structure=out+'.gro',out=out+'-renumber.gro',log='editconf-combo-%s'%out,resnr=1)
+	move_file(out+'-renumber.gro',out+'.gro')
+	os.remove(state.here+'log-editconf-combo-%s'%out)
+
+## END COBBLE
 
 _not_reported = ['makemesh','rotation_matrix','dotplace','distinguish_leaflets','deepcopy']
 _shared_extensions = ['bilayer_sorter','remove_jump','bilayer_middle']
@@ -104,13 +236,16 @@ def makeshape():
 	monolayer_meshes = [makemesh(p,vecs,debug=False,curvilinear=False) for p in pts]
 	return pts,monolayer_meshes,np.array([v for v in vecs]+[lz])
 
+#! temporarily hacking in read_gro
+
 def build_bilayer(name,random_rotation=True):
 	"""
 	Create a new bilayer according to a particular topography.
 	Historical note: comes from amx/procedures/bilayer.py
 	"""
 	#! temporary hack. perhaps decorate?
-	from amx import read_gro
+	#! deprecated from amx import read_gro
+	from amx.gromacs.structure_tools import GMXStructure
 	#---collect the bilayer topography and the lipid points
 	ptsmid,monolayer_mesh,vecs = makeshape()
 
@@ -133,7 +268,11 @@ def build_bilayer(name,random_rotation=True):
 	lnames = list(set(list(monolayer0.keys())+list(monolayer1.keys())))
 	for key in lnames:
 		#---previously used read_molecule
-		incoming = read_gro(os.path.join(state.get('lipid_structures'),key+'.gro'),cwd='./')
+		#! hacking with the dict to replace read_gro
+		incoming = GMXStructure(os.path.join(state.get('lipid_structures'),key+'.gro')).__dict__
+		#print('refactor')
+		#import ipdb;ipdb.set_trace()
+		#! incoming = read_gro(os.path.join(state.get('lipid_structures'),key+'.gro'),cwd='./')
 		lpts,atomnames = np.array(incoming['points']),np.array(incoming['atom_names'])
 		lipids[key] = {'lpts':lpts,'atomnames':atomnames}
 		lipid_order.append(key)
@@ -193,7 +332,7 @@ def build_bilayer(name,random_rotation=True):
 
 	#---write the placed lipids to a file
 	resnr = 1
-	with open(state.here+name+'.gro','w') as fp:
+	with open(state.here+name,'w') as fp:
 		fp.write('%s\n'%state.q('system_name')+'%d\n'%natoms)
 		#---loop over lipid types
 		for lipid_num,resname in enumerate(lipid_order):
@@ -227,7 +366,6 @@ def lipid_upright():
 	if not state.lipids_itp: 
 		raise Exception('to add upright lipid contraints, we need a lipids_itp to rewrite')
 	itps = GMXTopology(os.path.join(state.here,state.force_field+'.ff',state.lipids_itp))
-	import ipdb;ipdb.set_trace()
 	sys.exit(1)
 
 def distinguish_leaflets(structure='incoming',gro='outgoing',
@@ -307,19 +445,22 @@ def remove_jump(structure,tpr,gro,pbc='nojump'):
 	"""
 	Correct that thing where the bilayer crosses the PBCs and gets split.
 	"""
-	gmx('make_ndx',ndx=structure,structure=structure,inpipe="keep 0\nq\n",log='make-ndx-%s'%pbc)	
-	gmx('trjconv',ndx=structure,structure=structure,gro=gro,tpr=tpr,
+	gmx('make_ndx',out=structure,structure=structure,inpipe="keep 0\nq\n",log='make-ndx-%s'%pbc)	
+	#! last edit on vacuum-pack2.gro debugging where that file has many frames
+	gmx('trjconv',index=structure,structure=structure+'.gro',out=gro+'.gro',input=tpr,
 		log='trjconv-%s-%s'%(structure,pbc),pbc=pbc)
-	os.remove(state.here+'log-'+'make-ndx-%s'%pbc)
+	#os.remove(state.here+'log-'+'make-ndx-%s'%pbc)
 
 def vacuum_pack(structure='vacuum',name='vacuum-pack',gro='vacuum-packed',pbc='nojump'):
 	"""
 	Pack the lipids in the plane, gently.
 	"""
-	gmx('grompp',base='md-%s'%name,top='vacuum',
-		structure=structure,log='grompp-%s'%name,mdp='input-md-%s-eq-in'%name,
+	gmx('grompp',base='md-%s'%name,topology='vacuum',
+		structure=structure,log='grompp-%s'%name,
+		parameters='input-md-%s-eq-in'%name,
 		maxwarn=100,r='%s.gro'%structure)
-	gmx('mdrun',base='md-%s'%name,log='mdrun-%s'%name,nonessential=True)
+	#! removed nonessential=True
+	gmx('mdrun',base='md-%s'%name,log='mdrun-%s'%name)
 	if pbc:
 		remove_jump(structure='md-%s'%name,tpr='md-'+name,gro='md-%s-%s'%(name,pbc))
 		copy_file('md-%s-%s.gro'%(name,pbc),'%s.gro'%gro)
@@ -344,46 +485,88 @@ def vacuum_pack_loop(structure,gro,tpr):
 		struct_in = name
 	copy_file(name+'.gro',gro+'.gro')
 
-def solvate_bilayer(structure='vacuum'):
+def solvate_bilayer(structure='vacuum',gro='solvate',refactor=0):
 	"""
 	Solvate a CGMD bilayer (possibly with proteins) avoiding overlaps.
 	"""
-	#---check the size of the slab
+	from amx.gromacs.structure_tools import GMXStructure,trim_waters
+	#! hacking the export
+	import amx
+	amx.gromacs.structure_tools.state = state
+	# check the size of the slab
 	incoming_structure = str(structure)
 	boxdims_old,boxdims = get_box_vectors(structure)
-	#---check the size of the water box
-	waterbox = state.water_box
+	# check the size of the water box
+	#! on 2019.12.06 I could not locate state.water_box anywhere
+	#! and solvate appears to be the right setting
+	waterbox = settings.solvent
+	if not waterbox:
+		raise Exception('missing solvent (the water box) from settings')
 	basedim,_ = get_box_vectors(waterbox)
 	if not all([i==basedim[0] for i in basedim]):
-		raise Exception('[ERROR] expecting water box to be cubic but boxdims are %s'%str(basedim))
+		raise Exception(
+			'[ERROR] expecting water box to be cubic but boxdims are %s'%
+			str(basedim))
 	else: basedim = basedim[0]
-	#---make an oversized water box
+	# make an oversized water box
 	newdims = boxdims_old[:2]+[state.solvent_thickness]
-	gmx('genconf',structure=waterbox,gro='solvate-empty-uncentered-untrimmed',
+	gmx('genconf',structure=waterbox,out='solvate-empty-uncentered-untrimmed',
 		nbox=' '.join([str(int(i/basedim+1)) for i in newdims]),log='genconf')
-	#---trim the blank water box
+	# trim the blank water box
 	trim_waters(structure='solvate-empty-uncentered-untrimmed',
 		gro='solvate-empty-uncentered',boxcut=True,boxvecs=newdims,
 		gap=0.0,method=state.atom_resolution)
-	#---update waters
-	structure='solvate-empty-uncentered'
+	# update waters
+	structure = 'solvate-empty-uncentered.gro'
 	component(state.sol,count=count_molecules(structure,state.sol))
-	#---translate the water box
-	gmx('editconf',structure=structure,gro='solvate-water-shifted',
-		translate='0 0 %f'%(state.bilayer_dimensions_slab[2]/2.),log='editconf-solvate-shift')
-	#---combine and trim with new box vectors
-	structure = 'solvate-water-shifted'
+
+	"""
+	development notes:
+		The restuff function fixes the problem of lateral clusters of lipids
+		under PBCs but might also split the bilayer in the z-dimension.
+		At this stage we have a possibly-split bilayer and water in the box
+		but overlapping. This does not allow for the specific slab height to be
+		accurate however everything compreses anyway.
+		The original method probably worked because it did not split the 
+		bilayer but perhaps we could have avoided the split by translating it 
+		to the middle of the box anyway. Note that the trim method removes
+		clashes and also removes items outside the box so the original method
+		probably worked fine because it didn't have the bilayer split over 
+		z-dimension PBCs so the top of the water sticking out of the box would 
+		just get shaved off. The current problem is that there is water beyond 
+		the split bilayer and the shaved off part is beyond those lipids
+		hence we get water in the middle of the bilayer.
+		The current solution is to simply remove clashes and continue.
+	"""
+	if refactor:
+
+		# combine and trim with new box vectors
+		structure = 'solvate-empty-uncentered'
+
+	# original method
+	else:
+		# translate the water box
+		gmx('editconf',structure=structure,out='solvate-water-shifted.gro',
+			translate='0 0 %f'%(state.bilayer_dimensions_slab[2]/2.),log='editconf-solvate-shift')
+		# combine and trim with new box vectors
+		structure = 'solvate-water-shifted'
+
 	boxdims_old,boxdims = get_box_vectors(structure)
-	boxvecs = state.bilayer_dimensions_slab[:2]+[state.bilayer_dimensions_slab[2]+boxdims[2]]
+	boxvecs = state.bilayer_dimensions_slab[:2]+[
+		state.bilayer_dimensions_slab[2]+boxdims[2]]
 	gro_combinator('%s.gro'%incoming_structure,structure,box=boxvecs,
 		cwd=state.here,gro='solvate-dense')
 	structure = 'solvate-dense'
-	#---trim everything so that waters are positioned in the box without steric clashes
-	trim_waters(structure=structure,gro='solvate',boxcut=False,
-		gap=state.protein_water_gap,method=state.atom_resolution,boxvecs=boxvecs)
+	# trim everything so that waters are in the box without steric clashes
+	#! this function I pulled in from deprecated amx/gromacs/common.py
+	trim_waters(structure=structure,gro=gro,boxcut=False,
+		gap=state.protein_water_gap,method=state.atom_resolution,
+		boxvecs=boxvecs)
 	structure = 'solvate'
-	nwaters = count_molecules(structure,state.sol)/({'aamd':3.0,'cgmd':1.0}[state.atom_resolution])
-	if round(nwaters)!=nwaters: raise Exception('[ERROR] fractional water molecules')
+	nwaters = count_molecules(structure,state.sol)/(
+		{'aamd':3.0,'cgmd':1.0}[state.atom_resolution])
+	if round(nwaters)!=nwaters: 
+		raise Exception('[ERROR] fractional water molecules')
 	else: nwaters = int(nwaters)
 	component(state.sol,count=nwaters)
 	state.bilayer_dimensions_solvate = boxvecs
@@ -408,18 +591,18 @@ def bilayer_middle(structure,gro):
 	This means that the bilayer will be broken across z=0.
 	For visualization it is better to center it.
 	"""
-	gmx('make_ndx',ndx='system-dry',structure='counterions-minimized',
+	gmx('make_ndx',out='system-dry',structure='counterions-minimized',
 		inpipe="keep 0\nr %s || r ION || r %s || r %s\n!1\ndel 1\nq\n"%(
 		state.sol,state.anion,state.cation),
 		log='make-ndx-center')
 	#---bilayer slab is near z=0 so it is likely split so we shift by half of the box vector
-	gmx('trjconv',structure='counterions-minimized',gro='counterions-shifted',ndx='system-dry',
+	gmx('trjconv',structure='counterions-minimized.gro',out='counterions-shifted.gro',index='system-dry',
 		trans='0 0 %f'%(state.bilayer_dimensions_solvate[2]/2.),pbc='mol',
-		tpr='em-counterions-steep',log='trjconv-shift',inpipe="0\n0\n")
+		input='em-counterions-steep',log='trjconv-shift',inpipe="0\n0\n")
 	#---! added extra 0 above for shifting -- not sure why this error wasn't caught earlier?
 	#---center everything
-	gmx('trjconv',structure='counterions-shifted',gro='system',ndx='system-dry',
-		tpr='em-counterions-steep',log='trjconv-middle',inpipe="1\n0\n",center=True,pbc='mol')
+	gmx('trjconv',structure='counterions-shifted.gro',out='system.gro',index='system-dry',
+		input='em-counterions-steep',log='trjconv-middle',inpipe="1\n0\n",center=True,pbc='mol')
 
 def bilayer_sorter(structure,ndx='system-groups',protein=False):
 	"""
@@ -432,11 +615,11 @@ def bilayer_sorter(structure,ndx='system-groups',protein=False):
 	if 'protein_ready' in state or protein:
 		#---in the atomistic method, the make_ndx output will figure out which items are proteins
 		if atomistic_or_coarse()=='aamd':
-			gmx('make_ndx',structure=structure,ndx='%s-inspect'%structure,
+			gmx('make_ndx',structure=structure,out='%s-inspect'%structure,
 				log='make-ndx-%s-inspect'%structure,inpipe="q\n")
 			with open(state.here+'log-make-ndx-%s-inspect'%structure) as fp: lines = fp.readlines()
 			#---find the protein group because it may not be obvious in CGMD
-			make_ndx_sifter = '^\s*([0-9]+)\s*Protein'
+			make_ndx_sifter = r'^\s*([0-9]+)\s*Protein'
 			protein_group = int(re.findall(make_ndx_sifter,
 				next(i for i in lines if re.match(make_ndx_sifter,i)))[0])
 			group_selector = "\n".join([
@@ -466,7 +649,7 @@ def bilayer_sorter(structure,ndx='system-groups',protein=False):
 			"name 1 LIPIDS",
 			" || ".join(['r '+r for r in sol_list]),
 			"name 2 SOLVENT","q"])+"\n"
-	gmx('make_ndx',structure='system',ndx=ndx,log='make-ndx-groups',
+	gmx('make_ndx',structure='system',out=ndx,log='make-ndx-groups',
 		inpipe=group_selector)
 
 def bilayer_flatten_for_restraints(structure,gro):

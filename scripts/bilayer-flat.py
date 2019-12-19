@@ -2,25 +2,28 @@
 
 from amx import *
 
-init()
 make_step(settings.step)
 write_mdp()
 write_continue_script()
-build_bilayer(name='vacuum-bilayer')
+build_bilayer(name='vacuum-bilayer.gro')
 copy_file('vacuum-bilayer.gro','vacuum.gro')
 state.force_field = settings.force_field_upright
 write_top('vacuum.top')
-minimize('vacuum')
+minimize('vacuum',restraints='vacuum.gro')
 vacuum_pack_loop(
 	structure='vacuum-minimized',
 	tpr='em-vacuum-steep',
 	gro='vacuum-packed')
 restuff(
-	structure='vacuum-packed',
-	gro='solvate-dry',
+	structure='vacuum-packed.gro',
+	gro='solvate-dry-stuff',
 	tpr=get_last('tpr'),
 	ndx=get_last('ndx'))
-solvate(
+remove_jump(
+	structure='solvate-dry-stuff',
+	tpr=get_last('tpr'),
+	gro='solvate-dry')
+solvate_bilayer(
 	structure='solvate-dry',
 	gro='solvate')
 write_top('solvate.top')
